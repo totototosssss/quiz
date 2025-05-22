@@ -3,51 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>クイズ with研一</title>
+    <title>タイピングクイズ NEW</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="quiz-container">
-        <header class="quiz-header">
-            <h1>クイズ with研一</h1>
-        </header>
-        
-        <main id="quiz-main-content">
-            <div id="question-area">
-                <h2 id="question-text">問題を読み込んでいます...</h2>
-                <p id="answer-length-hint" style="display:none;">答えの文字数ヒント</p>
-            </div>
+    <div class="app-container">
+        <div id="start-screen">
+            <h1>タイピングクイズ</h1>
+            <button id="start-game-button" class="big-button">ゲームスタート！</button>
+        </div>
 
-            <div id="input-area" style="display:none;">
-                <div id="answer-boxes-container">
-                    </div>
-                <img id="stone-image" src="stone.png" alt="stone decoration" style="display:none;">
-            </div>
-
-            <div id="feedback-display" class="feedback-display" style="display:none;">
+        <div class="quiz-container" id="quiz-container" style="display:none;">
+            <header class="quiz-header">
+                <h1 id="quiz-title">タイピングクイズ</h1>
+                <p id="question-progress-display">10問中 1問目</p>
+            </header>
+            
+            <main id="quiz-main-content">
+                <div id="question-area">
+                    <h2 id="question-text">ここに問題が表示されます</h2>
+                    <p id="answer-length-hint">答えの文字数ヒント</p>
                 </div>
-            <p id="general-feedback" style="display:none;"></p>
-            <p id="attempts-left-display" style="display:none;">挑戦回数: あと 3 回</p>
 
-            <div id="action-buttons">
-                <button id="submit-answer-button" style="display:none;">解答する</button>
-                <button id="next-button" style="display:none;">次の問題へ</button>
-            </div>
-        </main>
+                <div id="input-area">
+                    <div id="answer-boxes-container">
+                        </div>
+                    <img id="stone-image" src="stone.png" alt="stone decoration" style="display:none;">
+                </div>
 
-        <footer id="quiz-footer" style="display:none;">
-            <div id="score-area">
-                <p>スコア: <span id="score">0</span></p>
-            </div>
-        </footer>
+                <div id="feedback-display" class="feedback-display">
+                    </div>
+                <p id="general-feedback"></p>
+                <p id="attempts-left-display">挑戦回数: あと 3 回</p>
+
+                <div id="action-buttons">
+                    <button id="submit-answer-button">解答する</button>
+                    <button id="next-button" style="display:none;">次の問題へ</button>
+                </div>
+            </main>
+
+            <footer id="quiz-footer">
+                <div id="score-area">
+                    <p>現在のスコア: <span id="score">0</span></p>
+                </div>
+            </footer>
+        </div>
 
         <div id="result-area" class="result-area" style="display:none;">
             <h2>クイズ終了！</h2>
-            <p>最終スコア: <span id="final-score">0</span> / <span id="total-questions">0</span></p>
-            <button id="restart-button">もう一度挑戦</button>
+            <p>最終スコア: <span id="final-score">0</span> / <span id="total-questions-in-game">0</span>問正解</p>
+            <p>獲得ポイント: <span id="final-points">0</span>点</p>
+            <button id="restart-button" class="big-button">もう一度挑戦</button>
         </div>
     </div>
 
