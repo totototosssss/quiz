@@ -50,18 +50,18 @@ h2#question-text {
 }
 
 #input-area {
-    display: flex; /* JSでflexに変更して表示 */
+    display: flex; 
     flex-direction: column;
     align-items: center;
     margin-bottom: 20px;
-    gap: 20px; /* answer-boxes-container と stone-image の間のスペース */
+    gap: 20px; 
 }
 
 #answer-boxes-container {
     display: flex;
     justify-content: center;
-    gap: 8px; /* 文字ボックス間のスペース */
-    flex-wrap: wrap; /* 文字数が多い場合に折り返し */
+    gap: 8px; 
+    flex-wrap: wrap; 
 }
 
 .char-box {
@@ -73,8 +73,8 @@ h2#question-text {
     border-radius: 8px;
     outline: none;
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    font-family: inherit; /* 親要素のフォントを継承 */
-    caret-color: #3498db; /* カーソルの色 */
+    font-family: inherit; 
+    caret-color: #3498db; 
 }
 
 .char-box:focus {
@@ -83,8 +83,8 @@ h2#question-text {
 }
 
 #stone-image {
-    display: block; /* JSで表示/非表示 */
-    max-width: 80px; /* stone.pngの最大幅 */
+    display: block; 
+    max-width: 80px; 
     height: auto;
     opacity: 0.7;
 }
@@ -98,18 +98,18 @@ h2#question-text {
 }
 
 #general-feedback {
-    font-weight: 700; /* Bold */
+    font-weight: 700; 
     min-height: 24px;
     margin-bottom: 10px;
     font-size: 1.1em;
 }
 
 #general-feedback.correct {
-    color: #27ae60; /* 緑 */
+    color: #27ae60; 
 }
 
 #general-feedback.incorrect {
-    color: #e74c3c; /* 赤 */
+    color: #e74c3c; 
 }
 
 #attempts-left-display {
@@ -128,7 +128,7 @@ h2#question-text {
 #submit-answer-button,
 #next-button,
 #restart-button {
-    background-color: #3498db; /* 明るい青 */
+    background-color: #3498db; 
     color: white;
     border: none;
     padding: 12px 25px;
@@ -142,7 +142,7 @@ h2#question-text {
 #submit-answer-button:hover:not(:disabled),
 #next-button:hover,
 #restart-button:hover {
-    background-color: #2980b9; /* 少し濃い青 */
+    background-color: #2980b9; 
     transform: translateY(-1px);
 }
 #submit-answer-button:active:not(:disabled),
@@ -153,7 +153,7 @@ h2#question-text {
 
 
 #submit-answer-button:disabled {
-    background-color: #bdc3c7; /* グレーアウト */
+    background-color: #bdc3c7; 
     cursor: not-allowed;
     box-shadow: none;
 }
@@ -170,7 +170,7 @@ h2#question-text {
     font-weight: 700;
 }
 #score-area #score {
-    color: #e67e22; /* スコアの色 */
+    color: #e67e22; 
 }
 
 
@@ -194,13 +194,12 @@ h2#question-text {
     color: #e67e22;
 }
 #restart-button {
-    background-color: #2ecc71; /* 緑 */
+    background-color: #2ecc71; 
 }
 #restart-button:hover {
-    background-color: #27ae60; /* 少し濃い緑 */
+    background-color: #27ae60; 
 }
 
-/* レスポンシブ対応：画面幅が小さい場合 */
 @media (max-width: 600px) {
     .quiz-container {
         padding: 20px;
@@ -221,12 +220,12 @@ h2#question-text {
         font-size: 1.5em;
     }
     #action-buttons {
-        flex-direction: column; /* ボタンを縦積みに */
+        flex-direction: column; 
     }
     #submit-answer-button,
     #next-button,
     #restart-button {
-        width: 100%; /* ボタン幅を親要素に合わせる */
+        width: 100%; 
         padding: 15px;
     }
 }
