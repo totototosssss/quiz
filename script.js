@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // DOM Elements
+    // DOM Elements - 最初にすべて取得を試みる
     const startScreenElement = document.getElementById('start-screen');
     const startGameButton = document.getElementById('start-game-button');
     const startScreenErrorElement = document.getElementById('start-screen-error');
@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const answerLengthHintElement = document.getElementById('answer-length-hint');
     const inputAreaElement = document.getElementById('input-area');
     const answerBoxesContainerElement = document.getElementById('answer-boxes-container');
-    const stoneImageElement = document.getElementById('stone-image');
+    const stoneImageElement = document.getElementById('stone-image'); // HTMLにあれば使われる (オプション扱い)
     const feedbackDisplayElement = document.getElementById('feedback-display');
     const generalFeedbackElement = document.getElementById('general-feedback');
     const attemptsLeftDisplayElement = document.getElementById('attempts-left-display');
@@ -31,36 +31,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const restartButton = document.getElementById('restart-button');
     const quizMainContentElement = document.getElementById('quiz-main-content');
 
-    // Quiz State
-    let allQuestions = [];
-    let selectedQuestions = [];
-    let currentQuestionIndex = 0;
-    let currentAnswer = "";
-    let totalPoints = 0;
-    let correctAnswersCount = 0;
-    let attemptsLeft = 0;
-    let charInputBoxes = [];
-    const MAX_ATTEMPTS = 3;
-    const NUM_QUESTIONS_TO_PLAY = 10;
-
-    let isComposing = false; 
-    let programmaticChange = false; 
-
-    const POINTS_ATTEMPT_1 = 10;
-    const POINTS_ATTEMPT_2 = 5;
-    const POINTS_ATTEMPT_3 = 3;
-
+    // Quiz State (変更なし)
+    let allQuestions = [], selectedQuestions = [], currentQuestionIndex = 0, currentAnswer = "", totalPoints = 0, correctAnswersCount = 0, attemptsLeft = 0, charInputBoxes = [];
+    const MAX_ATTEMPTS = 3, NUM_QUESTIONS_TO_PLAY = 10;
+    let isComposing = false, programmaticChange = false; 
+    const POINTS_ATTEMPT_1 = 10, POINTS_ATTEMPT_2 = 5, POINTS_ATTEMPT_3 = 3;
     const NEW_QUIZ_TITLE = "クイズwith研一";
 
-    function checkCriticalElementsExist() {
-        console.log("SCRIPT: checkCriticalElementsExist() を呼び出しました。");
-        const criticalElementGetters = { // ID文字列と期待される定数名をペアにする
+    function checkCriticalElementsExistAndLog() {
+        console.log("SCRIPT: checkCriticalElementsExistAndLog() を呼び出しました。HTML要素の存在を確認します。");
+        // チェックするべき要素とその定数名をマッピング
+        // stoneImageElement はオプションなのでここでの必須チェックからは除外
+        const elementsToVerify = {
             'start-screen': startScreenElement, 'start-game-button': startGameButton, 
             'start-screen-error': startScreenErrorElement, 'quiz-container': quizContainerElement,
             'quiz-title': quizTitleElement, 'question-progress-display': questionProgressDisplayElement,
             'question-text': questionTextElement, 'answer-length-hint': answerLengthHintElement,
             'input-area': inputAreaElement, 'answer-boxes-container': answerBoxesContainerElement,
-            // 'stone-image': stoneImageElement, // stoneImageはオプション扱いのため、ここではチェックしない
             'feedback-display': feedbackDisplayElement, 'general-feedback': generalFeedbackElement,
             'attempts-left-display': attemptsLeftDisplayElement, 'action-buttons': actionButtonsElement,
             'submit-answer-button': submitAnswerButton, 'give-up-button': giveUpButton,
@@ -70,35 +57,52 @@ document.addEventListener('DOMContentLoaded', () => {
             'final-points': finalPointsElement, 'restart-button': restartButton,
             'quiz-main-content': quizMainContentElement
         };
+
         let allCriticalFound = true;
-        for (const id in criticalElementGetters) {
-            if (!document.getElementById(id)) { // 直接DOMからIDで存在確認
-                console.error(`SCRIPT_CRITICAL_ERROR: 必須HTML要素 (ID: ${id}) がDOMに見つかりません。`);
+        for (const idName in elementsToVerify) {
+            const elementObject = elementsToVerify[idName]; // 定数に格納された要素オブジェクト
+            if (!elementObject) { // 定数が null または undefined の場合
+                // HTML内にもidが存在しないか念のため確認 (通常は定数がnullならHTMLにも無い)
+                if (!document.getElementById(idName)) {
+                     console.error(`SCRIPT_CRITICAL_ERROR: HTML要素 (ID: ${idName}) がDOMに見つかりません。`);
+                } else {
+                    // これは通常起こらないはず (定数がnullだがDOMにはある状況)
+                    console.error(`SCRIPT_CRITICAL_ERROR: JavaScript変数 '${idName}Element' がnullですが、HTML (ID: ${idName}) には要素が存在するようです。スクリプトの初期化順序の問題かもしれません。`);
+                }
                 allCriticalFound = false;
-            } else if (!criticalElementGetters[id]){ // 定義されたJS変数がnullの場合 (通常は上記で捕捉)
-                 console.error(`SCRIPT_CRITICAL_ERROR: JS変数 ${Object.keys(criticalElementGetters).find(key => criticalElementGetters[key] === id)} がnullです (ID: ${id})。`);
-                 allCriticalFound = false;
             }
         }
+
         if (!allCriticalFound) {
-            console.error("SCRIPT_CRITICAL_ERROR: ページ初期化に必要なHTML要素が不足しています。上記のログを確認してください。");
+            console.error("SCRIPT_CRITICAL_ERROR: ページ初期化に必要なHTML要素が1つ以上不足しています。上記のログで具体的な要素IDを確認し、index.htmlファイルに正しいIDを持つ要素が存在するか確認してください。");
         }
         return allCriticalFound;
     }
 
-    // スクリプトの最初にHTML要素の存在をチェック
-    if (!checkCriticalElementsExist()) {
-        alert("ページエラー：クイズの表示に必要な部品が見つかりません。HTMLファイルを確認するか、ページを再読み込みしてください。詳細はブラウザのコンソールに表示されています。");
-        // エラーがある場合は、主要な処理を試みないようにする
-        if(startScreenErrorElement) {
-            startScreenErrorElement.textContent = "ページエラー。HTML要素が不足しています。";
+    // スクリプト開始時にHTML要素の存在をチェック
+    if (!checkCriticalElementsExistAndLog()) {
+        const userAlertMessage = "クイズの初期化に失敗しました。\n必要なHTMLの部品が見つからないようです。\nお手数ですが、ブラウザのデベロッパーコンソールを開き、「SCRIPT_CRITICAL_ERROR」から始まるエラーメッセージを確認し、HTMLファイルに必要なIDを持つ要素が存在するかご確認ください。";
+        
+        // startScreenErrorElement が確実に見つかっている場合のみ使用
+        if (startScreenErrorElement) {
+            startScreenErrorElement.textContent = "ページエラー。HTMLの部品が不足しています。コンソールを確認してください。";
             startScreenErrorElement.style.display = 'block';
+        } else {
+            // startScreenErrorElement 自体がない場合は、bodyに直接メッセージを出すか、alertを出す
+            const bodyErrorMsg = document.createElement('p');
+            bodyErrorMsg.style.color = 'red';
+            bodyErrorMsg.style.fontWeight = 'bold';
+            bodyErrorMsg.style.padding = '20px';
+            bodyErrorMsg.style.textAlign = 'center';
+            bodyErrorMsg.textContent = userAlertMessage.replace(/\n/g, ' ');
+            document.body.insertBefore(bodyErrorMsg, document.body.firstChild);
+            // alert(userAlertMessage); // alertは最後の手段
         }
-        if(startGameButton) startGameButton.disabled = true;
-        return; 
+        if (startGameButton) startGameButton.disabled = true; // スタートボタンが存在すれば無効化
+        return; // スクリプトの主要な処理を中断
     }
     
-    // タイトル設定は checkCriticalElementsExist の後で
+    // タイトル設定
     document.title = NEW_QUIZ_TITLE;
     const h1InStartScreen = startScreenElement.querySelector('h1');
     if (h1InStartScreen) h1InStartScreen.textContent = NEW_QUIZ_TITLE;
@@ -111,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
             startScreenErrorElement.textContent = message; 
             startScreenErrorElement.style.display = 'block';
         } else { 
-            console.error("SCRIPT_ERROR: スタート画面のエラー表示要素が見つかりません。"); 
+            console.error("SCRIPT_ERROR: スタート画面のエラー表示要素 startScreenErrorElement が見つかりません。"); 
             alert(message); 
         }
         if (startGameButton) { 
@@ -122,22 +126,21 @@ document.addEventListener('DOMContentLoaded', () => {
     
     async function initializeApp() {
         console.log("SCRIPT: initializeApp() が呼び出されました。"); 
-        await loadQuestions(); // 問題データを読み込む
+        await loadQuestions(); 
         
-        // loadQuestions の結果をみてボタンのリスナー設定を判断
-        if (startGameButton) { // ボタン自体が存在するか確認
-            if (allQuestions.length > 0) {
-                startGameButton.disabled = false; // 問題があれば有効化
+        if (startGameButton) { // ボタン自体が存在するか確認 (checkCriticalElementsExistAndLogで確認済みのはず)
+            if (allQuestions.length > 0) { // 問題が正常に読み込めた場合のみ
+                startGameButton.disabled = false; 
                 startGameButton.addEventListener('click', handleStartGameClick);
                 console.log("SCRIPT: スタートボタンにイベントリスナーを設定しました。(問題あり)");
             } else {
-                startGameButton.disabled = true; // 問題がなければ無効のまま
-                console.warn("SCRIPT: 問題が0件のため、スタートボタンは無効のままです。リスナーは設定しません。");
-                // displayStartScreenError で既にエラー表示されているはず
+                startGameButton.disabled = true; 
+                console.warn("SCRIPT: 問題が0件、または読み込み失敗のため、スタートボタンは無効のままです。");
+                // displayStartScreenError は loadQuestions 内で既に呼ばれているはず
             }
         } else {
-            console.error("SCRIPT_CRITICAL_ERROR: スタートボタン(startGameButton)のHTML要素が見つかりませんでした。");
-            // このエラーは checkCriticalElementsExist で捕捉されるべき
+            // このケースは checkCriticalElementsExistAndLog で捕捉され、スクリプトがここまで到達しないはず
+            console.error("SCRIPT_CRITICAL_ERROR: initializeApp - スタートボタン(startGameButton)がnullです。これは予期せぬ状態です。");
         }
     }
 
@@ -157,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function loadQuestions() {
         console.log("SCRIPT: loadQuestions() が呼び出されました。");
-        allQuestions = []; // 毎回クリアして再読み込み試行
+        allQuestions = []; 
         try {
             const response = await fetch('train_questions.json'); 
             console.log(`SCRIPT: fetchレスポンス - ステータス: ${response.status}, OK: ${response.ok}`);
@@ -165,7 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const errorMsg = `問題ファイルの読み込みに失敗 (HTTP ${response.status})。ファイル名やパスを確認してください。`; 
                 console.error("SCRIPT: fetchエラー:", errorMsg); 
                 displayStartScreenError(errorMsg + " クイズを開始できません。"); 
-                return; // ここで処理を終了
+                return; 
             }
             
             const textData = await response.text(); 
@@ -174,12 +177,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 const errorMsg = '問題ファイルが空か、内容が空白文字のみです。'; 
                 console.error("SCRIPT: ファイル内容が空です。"); 
                 displayStartScreenError(errorMsg + " クイズを開始できません。"); 
-                return; // ここで処理を終了
+                return; 
             }
 
             const lines = textData.trim().split('\n'); 
             let parsedLinesCount = 0, validQuestionsCount = 0;
-            const tempQuestions = lines.map((line, index) => { // 一時変数に格納
+            const tempQuestions = lines.map((line, index) => {
                 const lineNumber = index + 1; 
                 if (!line.trim()) return null; 
                 try {
@@ -199,7 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }).filter(q => q !== null); 
             
-            allQuestions = tempQuestions; // グローバル変数に代入
+            allQuestions = tempQuestions; 
 
             console.log(`SCRIPT: 解析試行行数: ${parsedLinesCount}, 有効問題数: ${validQuestionsCount}, 最終問題数 (allQuestions.length): ${allQuestions.length}`);
             
@@ -210,7 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 console.log("SCRIPT: 問題データの読み込み完了。");
                 if(startScreenErrorElement) startScreenErrorElement.style.display = 'none';
-                // startGameButton の状態更新は initializeApp に任せる
+                // スタートボタンの有効化は initializeApp で行う
             }
         } catch (error) { 
             console.error('SCRIPT: loadQuestions内で致命的エラー:', error); 
@@ -238,7 +241,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         quizMainContentElement.style.display = 'block';
         quizFooterElement.style.display = 'block';
-        resultAreaElement.style.display = 'none';
+        if(resultAreaElement) resultAreaElement.style.display = 'none';
         if (questionTextElement) questionTextElement.style.color = '#34495e'; 
         
         totalPoints = 0;
@@ -266,7 +269,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(actionButtonsElement) actionButtonsElement.style.display = 'flex';
         if(submitAnswerButton) submitAnswerButton.style.display = 'inline-block';
         if(giveUpButton) giveUpButton.style.display = 'inline-block'; 
-        if(stoneImageElement) stoneImageElement.style.display = 'none'; // 初期状態では非表示
+        if(stoneImageElement) stoneImageElement.style.display = 'none'; 
 
         displayQuestion();
     }
@@ -281,11 +284,11 @@ document.addEventListener('DOMContentLoaded', () => {
         for (let i = 0; i < answerLength; i++) {
             const inputBox = document.createElement('input');
             inputBox.type = 'text'; inputBox.classList.add('char-box'); inputBox.maxLength = 1; inputBox.dataset.index = i;
-            inputBox.addEventListener('compositionstart', () => { isComposing = true; /* console.log(`SCRIPT: inputBox ${i} - COMPOSITIONSTART`); */ });
+            inputBox.addEventListener('compositionstart', () => { isComposing = true; });
             inputBox.addEventListener('compositionend', (e) => {
                 isComposing = false; const target = e.target; const startIndex = parseInt(target.dataset.index);
                 const eventDataString = e.data || ""; 
-                // console.log(`SCRIPT: inputBox ${startIndex} - COMPOSITIONEND. e.data: "${eventDataString}", target.value: "${target.value}"`);
+                console.log(`SCRIPT: inputBox ${startIndex} - COMPOSITIONEND. e.data: "${eventDataString}", target.value: "${target.value}"`);
                 let stringToDistribute = eventDataString;
                 if (stringToDistribute && stringToDistribute.length > 0) {
                     programmaticChange = true; let lastFilledBoxActualIndex = startIndex - 1; 
@@ -334,7 +337,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if(questionProgressDisplayElement) questionProgressDisplayElement.textContent = `${selectedQuestions.length}問中 ${currentQuestionIndex + 1}問目`;
             if(answerLengthHintElement) answerLengthHintElement.textContent = `答えは ${currentAnswer.length} 文字です。`;
             createCharInputBoxes(currentAnswer.length); 
-            if (stoneImageElement) stoneImageElement.style.display = 'block'; // stone.pngを表示
+            if (stoneImageElement) stoneImageElement.style.display = 'block'; 
             
             if(feedbackDisplayElement) feedbackDisplayElement.innerHTML = "";
             if(generalFeedbackElement) { generalFeedbackElement.textContent = ""; generalFeedbackElement.className = ""; }
@@ -410,9 +413,9 @@ document.addEventListener('DOMContentLoaded', () => {
         attemptsLeft = 0; 
         if (attemptsLeftDisplayElement) attemptsLeftDisplayElement.textContent = `挑戦回数: あと ${attemptsLeft} 回`;
         if (generalFeedbackElement) { generalFeedbackElement.textContent = `正解は「${currentAnswer}」でした。`; generalFeedbackElement.className = "info"; }
-        if (feedbackDisplayElement) { feedbackDisplayElement.innerHTML = currentAnswer.split('').map(char => `<span>${char}</span>`).join(' ');}
+        if (feedbackDisplayElement) { feedbackDisplayElement.innerHTML = currentAnswer.split('').map(char => `<span style="color: #27ae60;">${char}</span>`).join(' ');} // 正解を緑色で表示
         charInputBoxes.forEach((box, idx) => {
-            if (idx < currentAnswer.length) { box.value = currentAnswer[idx]; box.style.borderColor = '#7f8c8d'; box.style.color = '#7f8c8d';}
+            if (idx < currentAnswer.length) { box.value = currentAnswer[idx]; box.style.borderColor = '#27ae60'; box.style.color = '#27ae60';}
         });
         finalizeAttempt(false); 
     }
@@ -433,6 +436,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Event Listeners
+    // submitAnswerButtonなどの主要ボタンのリスナーは、checkCriticalElementsExistで要素存在確認後に設定
+    // initializeApp の中で startGameButton のリスナーは設定済み
     if (submitAnswerButton) { submitAnswerButton.addEventListener('click', handleSubmitAnswer); console.log("SCRIPT: '解答する' ボタンにリスナー設定。"); } 
     else { console.error("SCRIPT_ERROR: submitAnswerButton がnullのためリスナー未設定。"); }
     if (giveUpButton) { giveUpButton.addEventListener('click', handleGiveUp); console.log("SCRIPT: '諦める' ボタンにリスナー設定。"); } 
@@ -445,6 +450,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (resultAreaElement) resultAreaElement.style.display = 'none';
             if (startScreenElement) startScreenElement.style.display = 'block';
             if (startGameButton && allQuestions.length > 0) { startGameButton.disabled = false; }
+            else if (startGameButton) { startGameButton.disabled = true; } // 問題がなければ無効のまま
         });
         console.log("SCRIPT: 'もう一度挑戦' ボタンにリスナー設定。");
     } else { console.error("SCRIPT_ERROR: restartButton がnullのためリスナー未設定。"); }
