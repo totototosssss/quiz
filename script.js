@@ -164,7 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let shuffled = shuffleArray([...allQuestions]); const numToShowThisGame = Math.min(NUM_QUESTIONS_TO_PLAY, shuffled.length);
         if (numToShowThisGame === 0) { console.error("SCRIPT: startGame - numToShowThisGame is 0."); displayErrorInQuiz("プレイできる問題がありません。"); return; }
         selectedQuestions = shuffled.slice(0, numToShowThisGame); console.log(`SCRIPT: 今回プレイする問題数: ${selectedQuestions.length}`);
-        if (totalQuestionsElement) totalQuestionsElement.textContent = selectedQuestions.length; // ここで総問題数を設定
+        if (totalQuestionsInGameElement) totalQuestionsElement.textContent = selectedQuestions.length; // ここで総問題数を設定
 
         if(inputAreaElement) inputAreaElement.style.display = 'flex'; if(answerLengthHintElement) answerLengthHintElement.style.display = 'block';
         if(feedbackDisplayElement) { feedbackDisplayElement.style.display = 'block'; feedbackDisplayElement.innerHTML = ''; }
