@@ -1,117 +1,232 @@
 body {
-    font-family: 'Arial', sans-serif;
+    font-family: 'M PLUS Rounded 1c', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
     margin: 0;
-    background-color: #eef2f7; /* シンプルな背景色 */
+    background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
     color: #333;
     padding: 20px;
     box-sizing: border-box;
+    font-weight: 400;
 }
 
 .quiz-container {
-    background-color: #ffffff;
-    padding: 25px;
-    border-radius: 10px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    background-color: rgba(255, 255, 255, 0.95);
+    padding: 30px 40px;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
     width: 100%;
-    max-width: 600px;
+    max-width: 650px;
     text-align: center;
+    display: flex;
+    flex-direction: column;
 }
 
-h1 {
-    color: #333;
+.quiz-header h1 {
+    font-size: 2.2em;
+    color: #2c3e50;
+    margin-bottom: 25px;
+    font-weight: 700;
+}
+
+#quiz-main-content {
     margin-bottom: 20px;
 }
 
 h2#question-text {
-    font-size: 1.4em;
+    font-size: 1.6em;
     margin-bottom: 15px;
-    min-height: 40px;
-    color: #333;
+    min-height: 45px;
+    color: #34495e;
+    line-height: 1.5;
 }
 
 #answer-length-hint {
-    font-size: 0.9em;
-    color: #555;
-    margin-bottom: 15px;
+    font-size: 0.95em;
+    color: #7f8c8d;
+    margin-bottom: 20px;
 }
 
 #input-area {
-    display: flex;
-    justify-content: center;
+    display: flex; /* JSでflexに変更して表示 */
+    flex-direction: column;
     align-items: center;
-    margin-bottom: 15px;
-    gap: 10px;
+    margin-bottom: 20px;
+    gap: 20px; /* answer-boxes-container と stone-image の間のスペース */
 }
 
-#answer-input {
-    padding: 10px;
-    font-size: 1em;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    flex-grow: 1;
-    max-width: 300px;
+#answer-boxes-container {
+    display: flex;
+    justify-content: center;
+    gap: 8px; /* 文字ボックス間のスペース */
+    flex-wrap: wrap; /* 文字数が多い場合に折り返し */
+}
+
+.char-box {
+    width: 45px;
+    height: 50px;
+    font-size: 1.8em;
+    text-align: center;
+    border: 2px solid #bdc3c7;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    font-family: inherit; /* 親要素のフォントを継承 */
+    caret-color: #3498db; /* カーソルの色 */
+}
+
+.char-box:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 8px rgba(52, 152, 219, 0.3);
+}
+
+#stone-image {
+    display: block; /* JSで表示/非表示 */
+    max-width: 80px; /* stone.pngの最大幅 */
+    height: auto;
+    opacity: 0.7;
+}
+
+#feedback-display {
+    margin: 20px 0;
+    font-size: 1.8em;
+    min-height: 35px;
+    letter-spacing: 0.3em;
+    color: #2c3e50;
+}
+
+#general-feedback {
+    font-weight: 700; /* Bold */
+    min-height: 24px;
+    margin-bottom: 10px;
+    font-size: 1.1em;
+}
+
+#general-feedback.correct {
+    color: #27ae60; /* 緑 */
+}
+
+#general-feedback.incorrect {
+    color: #e74c3c; /* 赤 */
+}
+
+#attempts-left-display {
+    font-size: 0.9em;
+    color: #95a5a6;
+    margin-bottom: 20px;
+}
+
+#action-buttons {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
 }
 
 #submit-answer-button,
 #next-button,
 #restart-button {
-    background-color: #007bff;
+    background-color: #3498db; /* 明るい青 */
     color: white;
     border: none;
-    padding: 10px 15px;
-    border-radius: 5px;
+    padding: 12px 25px;
+    border-radius: 8px;
     cursor: pointer;
     font-size: 1em;
-    transition: background-color 0.3s ease;
+    font-weight: 700;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
-
 #submit-answer-button:hover:not(:disabled),
 #next-button:hover,
 #restart-button:hover {
-    background-color: #0056b3;
+    background-color: #2980b9; /* 少し濃い青 */
+    transform: translateY(-1px);
 }
+#submit-answer-button:active:not(:disabled),
+#next-button:active,
+#restart-button:active {
+    transform: translateY(0px);
+}
+
 
 #submit-answer-button:disabled {
-    background-color: #ccc;
+    background-color: #bdc3c7; /* グレーアウト */
     cursor: not-allowed;
+    box-shadow: none;
 }
 
-.feedback-display {
-    margin: 15px 0;
-    font-size: 1.5em;
-    min-height: 30px;
-    letter-spacing: 0.2em;
+#quiz-footer {
+    margin-top: 25px;
+    padding-top: 15px;
+    border-top: 1px solid #ecf0f1;
 }
 
-#general-feedback {
-    font-weight: bold;
-    min-height: 20px;
-    margin-bottom: 10px;
-}
-
-#general-feedback.correct {
-    color: #28a745;
-}
-
-#general-feedback.incorrect {
-    color: #dc3545;
-}
-
-#attempts-left-display {
-    font-size: 0.9em;
-    color: #777;
-    margin-bottom: 15px;
-}
-
-.score-area {
-    margin-top: 20px;
+#score-area {
     font-size: 1.1em;
+    color: #34495e;
+    font-weight: 700;
 }
+#score-area #score {
+    color: #e67e22; /* スコアの色 */
+}
+
 
 .result-area {
     margin-top: 20px;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+}
+.result-area h2 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+}
+.result-area p {
+    font-size: 1.2em;
+    color: #34495e;
+    margin-bottom: 20px;
+}
+.result-area #final-score {
+    font-weight: bold;
+    color: #e67e22;
+}
+#restart-button {
+    background-color: #2ecc71; /* 緑 */
+}
+#restart-button:hover {
+    background-color: #27ae60; /* 少し濃い緑 */
+}
+
+/* レスポンシブ対応：画面幅が小さい場合 */
+@media (max-width: 600px) {
+    .quiz-container {
+        padding: 20px;
+        margin: 10px;
+    }
+    .quiz-header h1 {
+        font-size: 1.8em;
+    }
+    h2#question-text {
+        font-size: 1.3em;
+    }
+    .char-box {
+        width: 35px;
+        height: 40px;
+        font-size: 1.5em;
+    }
+    #feedback-display {
+        font-size: 1.5em;
+    }
+    #action-buttons {
+        flex-direction: column; /* ボタンを縦積みに */
+    }
+    #submit-answer-button,
+    #next-button,
+    #restart-button {
+        width: 100%; /* ボタン幅を親要素に合わせる */
+        padding: 15px;
+    }
 }
