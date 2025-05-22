@@ -1,10 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // DOM Elements - まず全て取得試行
+    // DOM Elements
     const questionTextElement = document.getElementById('question-text');
     const answerLengthHintElement = document.getElementById('answer-length-hint');
     const inputAreaElement = document.getElementById('input-area');
     const answerBoxesContainerElement = document.getElementById('answer-boxes-container');
-    const stoneImageElement = document.getElementById('stone-image'); // stone.png用 (HTMLになくてもOK)
+    const stoneImageElement = document.getElementById('stone-image');
     const feedbackDisplayElement = document.getElementById('feedback-display');
     const generalFeedbackElement = document.getElementById('general-feedback');
     const attemptsLeftDisplayElement = document.getElementById('attempts-left-display');
@@ -31,56 +31,47 @@ document.addEventListener('DOMContentLoaded', () => {
     const MAX_ATTEMPTS = 3;
     const NUM_QUESTIONS_TO_SHOW = 10;
 
-    // 必須HTML要素の存在確認関数
+    let isComposing = false; // IME入力中フラグ
+
     function checkCriticalElementsExist() {
         const criticalElements = {
-            questionTextElement, // 問題文表示エリア
-            answerBoxesContainerElement, // 回答ボックスの親
-            feedbackDisplayElement, // 正誤フィードバックシンボル表示
-            generalFeedbackElement, // 正解！不正解...メッセージ表示
-            submitAnswerButton,   // 解答ボタン
-            nextButton,           // 次へボタン
-            restartButton,        // リスタートボタン
-            resultAreaElement,    // 結果表示エリア
-            quizMainContentElement // メインコンテンツエリア
+            questionTextElement, answerBoxesContainerElement, feedbackDisplayElement,
+            generalFeedbackElement, submitAnswerButton, nextButton, restartButton,
+            resultAreaElement, quizMainContentElement
         };
         let allCriticalFound = true;
         for (const key in criticalElements) {
             if (!criticalElements[key]) {
-                console.error(`SCRIPT_CRITICAL_ERROR: 必須HTML要素が見つかりません - ${key}。 HTMLのid属性が正しいか、要素が存在するか確認してください。`);
+                console.error(`SCRIPT_CRITICAL_ERROR: 必須HTML要素が見つかりません - ${key}。`);
                 allCriticalFound = false;
             }
         }
         return allCriticalFound;
     }
 
-    // スクリプト開始時に必須要素をチェック
     if (!checkCriticalElementsExist()) {
-        if (questionTextElement) { // questionTextElement自体はエラー表示に使うため、存在すると仮定
-            questionTextElement.textContent = "ページの初期化に失敗しました。HTMLの構造を確認してください。詳細はブラウザのコンソールを参照してください。";
-            questionTextElement.style.color = '#e74c3c'; // エラー色
+        if (questionTextElement) {
+            questionTextElement.textContent = "ページの初期化に失敗しました。HTMLを確認してください。";
+            questionTextElement.style.color = '#e74c3c';
         } else {
-            // questionTextElementすら無い場合はアラートを出すなどするしかない
-            alert("致命的なエラー: 基本的なページ構造が読み取れません。");
+            alert("致命的なエラー: 基本ページ構造が読み取れません。");
         }
-        // 他の関連UI要素を非表示にする
-        const nonEssentialAreas = [inputAreaElement, quizFooterElement, scoreAreaElement, actionButtonsElement];
-        nonEssentialAreas.forEach(el => { if(el) el.style.display = 'none'; });
-        return; // 必須要素がなければ処理を中断
+        const UIElementsToHide = [inputAreaElement, quizFooterElement, scoreAreaElement, actionButtonsElement, resultAreaElement, quizMainContentElement];
+        UIElementsToHide.forEach(el => { if(el) el.style.display = 'none'; });
+        return;
     }
-
 
     async function loadQuestions() {
         console.log("SCRIPT: loadQuestions() が呼び出されました。");
         questionTextElement.textContent = "問題を読み込んでいます...";
-        questionTextElement.style.color = '#34495e'; // 通常の文字色
+        questionTextElement.style.color = '#34495e';
 
         try {
-            const response = await fetch('train_questions.json'); // ファイル名と場所を確認
+            const response = await fetch('train_questions.json');
             console.log(`SCRIPT: fetch('train_questions.json') のレスポンス - ステータス: ${response.status}, OK: ${response.ok}`);
             
             if (!response.ok) {
-                const errorMsg = `問題ファイルの読み込みに失敗 (HTTPステータス: ${response.status})。ファイル名 ('train_questions.json') や配置場所が正しいか、ファイルがリポジトリに存在するか確認してください。`;
+                const errorMsg = `問題ファイルの読み込みに失敗 (HTTP ${response.status})。ファイル名や場所を確認。`;
                 console.error("SCRIPT: fetchエラー:", errorMsg);
                 displayError(errorMsg);
                 return; 
@@ -89,89 +80,76 @@ document.addEventListener('DOMContentLoaded', () => {
             const textData = await response.text();
             console.log(`SCRIPT: 読み込まれたテキストデータの長さ: ${textData.length} 文字`);
             if (!textData.trim()) {
-                const errorMsg = '問題ファイルが空か、内容が空白文字のみです。ファイルを確認してください。';
+                const errorMsg = '問題ファイルが空か、内容が空白文字のみです。';
                 console.error("SCRIPT: ファイル内容が空です。");
                 displayError(errorMsg);
                 return;
             }
 
             const lines = textData.trim().split('\n');
-            console.log(`SCRIPT: ファイル内の行数 (改行で分割後): ${lines.length} 行`);
+            console.log(`SCRIPT: ファイル内の行数: ${lines.length} 行`);
             
             let parsedLinesCount = 0;
             let validQuestionsCount = 0;
 
             allQuestions = lines.map((line, index) => {
                 const lineNumber = index + 1;
-                if (!line.trim()) {
-                    // console.log(`SCRIPT: ${lineNumber}行目: 空行のためスキップします。`); // 詳細ログが必要な場合
-                    return null; 
-                }
+                if (!line.trim()) return null; 
                 try {
                     const q = JSON.parse(line);
                     parsedLinesCount++;
-                    // console.log(`SCRIPT: ${lineNumber}行目: JSON解析成功。内容:`, q); // 詳細ログ
-
-                    // question と answer_entity が存在し、かつ空でない文字列であることを確認
                     if (q && q.question && typeof q.question === 'string' && q.question.trim() !== "" &&
                         q.answer_entity && typeof q.answer_entity === 'string' && q.answer_entity.trim() !== "") {
                         validQuestionsCount++;
                         return q;
                     } else {
-                        console.warn(`SCRIPT: ${lineNumber}行目: 'question'または'answer_entity'が存在しないか空です。この行をスキップします。 question: "${q.question}", answer_entity: "${q.answer_entity}"`);
+                        console.warn(`SCRIPT: ${lineNumber}行目: 必須項目エラー。 question: "${q.question}", answer_entity: "${q.answer_entity}"`);
                         return null;
                     }
                 } catch (parseError) {
-                    console.error(`SCRIPT: ${lineNumber}行目: JSON解析エラー - ${parseError.message}。 問題のある行: "${line}"`);
+                    console.error(`SCRIPT: ${lineNumber}行目: JSON解析エラー - ${parseError.message}。 行: "${line}"`);
                     return null; 
                 }
             }).filter(q => q !== null); 
 
-            console.log(`SCRIPT: 解析を試みた行数: ${parsedLinesCount} (空行除く)`);
-            console.log(`SCRIPT: 有効な問題として処理された問題数 (question/answer_entityチェック後): ${validQuestionsCount}`);
-            console.log(`SCRIPT: 最終的な allQuestions 配列の長さ (null除去後): ${allQuestions.length}`);
-
+            console.log(`SCRIPT: 解析試行行数: ${parsedLinesCount}, 有効問題数: ${validQuestionsCount}, 最終問題数: ${allQuestions.length}`);
 
             if (allQuestions.length === 0) {
-                const errorMsg = '有効な問題データが読み込めませんでした。ファイルは読み込めていますが、中身の形式 (各行が正しいJSONか) や必須項目 (question, answer_entityが空でない文字列であること) を確認してください。詳細はブラウザのコンソールを確認してください。';
-                console.error("SCRIPT: 処理の結果、有効な問題が0件でした。");
+                const errorMsg = '有効な問題データが読み込めませんでした。詳細はコンソール確認。';
+                console.error("SCRIPT: 有効な問題が0件でした。");
                 displayError(errorMsg);
                 return;
             }
             
-            console.log("SCRIPT: 最初の有効な問題オブジェクト:", allQuestions[0]); 
+            console.log("SCRIPT: 最初の有効な問題:", allQuestions[0]); 
             startGame();
 
         } catch (error) { 
-            console.error('SCRIPT: loadQuestions内で致命的なエラー(例: ネットワーク問題、fetch自体の失敗など):', error);
-            displayError(`問題の読み込み中に予期せぬエラーが発生しました: ${error.message}. 詳細はブラウザのコンソールを確認してください。`);
+            console.error('SCRIPT: loadQuestions内で致命的エラー:', error);
+            displayError(`問題読み込み中に予期せぬエラー: ${error.message}. コンソール確認。`);
         }
     }
 
     function displayError(message) {
-        console.error("SCRIPT: displayError がメッセージ付きで呼び出されました:", message);
+        console.error("SCRIPT: displayError:", message);
         if (questionTextElement) {
             questionTextElement.textContent = message;
-            questionTextElement.style.color = '#e74c3c'; // エラーメッセージは赤字
+            questionTextElement.style.color = '#e74c3c';
         }
-
-        // クイズ関連の主要UI要素を非表示にする
         const elementsToHideOnError = [
             quizMainContentElement, quizFooterElement, resultAreaElement,
             answerLengthHintElement, inputAreaElement, feedbackDisplayElement,
             generalFeedbackElement, attemptsLeftDisplayElement, actionButtonsElement,
             scoreAreaElement 
         ];
-        elementsToHideOnError.forEach(el => {
-            if (el) el.style.display = 'none';
-        });
+        elementsToHideOnError.forEach(el => { if (el) el.style.display = 'none'; });
     }
 
     function startGame() {
         console.log("SCRIPT: startGame() が呼び出されました。");
         if (!quizMainContentElement || !quizFooterElement || !resultAreaElement || !questionTextElement || !totalQuestionsElement) {
-             console.error("SCRIPT_CRITICAL: startGameに必要な基本UI要素がありません。"); 
-             displayError("ページのUI部品が不足しているため、ゲームを開始できません。");
+             console.error("SCRIPT_CRITICAL: startGameに必要なUI要素がありません。"); 
+             displayError("UI部品不足でゲーム開始不可。");
              return;
         }
 
@@ -187,10 +165,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const numToShow = Math.min(NUM_QUESTIONS_TO_SHOW, shuffled.length);
         selectedQuestions = shuffled.slice(0, numToShow);
         
-        console.log(`SCRIPT: シャッフル後の問題数: ${shuffled.length}, 今回プレイする問題数: ${selectedQuestions.length}`);
+        console.log(`SCRIPT: 今回プレイする問題数: ${selectedQuestions.length}`);
         totalQuestionsElement.textContent = selectedQuestions.length;
         
-        // UI要素の表示状態をリセット
         if(inputAreaElement) inputAreaElement.style.display = 'flex';
         if(answerLengthHintElement) answerLengthHintElement.style.display = 'block';
         if(feedbackDisplayElement) {
@@ -204,13 +181,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if(attemptsLeftDisplayElement) attemptsLeftDisplayElement.style.display = 'block';
         if(actionButtonsElement) actionButtonsElement.style.display = 'flex';
         if(submitAnswerButton) submitAnswerButton.style.display = 'inline-block';
-        if(stoneImageElement) stoneImageElement.style.display = 'none'; // 石は問題表示時に出す
+        if(stoneImageElement) stoneImageElement.style.display = 'none';
 
         if (selectedQuestions.length > 0) {
             displayQuestion();
         } else {
-            console.error("SCRIPT: startGame() で selectedQuestions が0件です。これは予期せぬ状態です。");
-            displayError('表示できるクイズ問題がありません。(startGame内の最終チェック)');
+            console.error("SCRIPT: startGame() で selectedQuestions が0件です。");
+            displayError('表示できるクイズ問題がありません。(startGame)');
         }
     }
 
@@ -224,7 +201,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function createCharInputBoxes(answerLength) {
         if (!answerBoxesContainerElement) { 
-            console.error("SCRIPT_ERROR: answerBoxesContainerElement is null in createCharInputBoxes. Cannot create input boxes."); 
+            console.error("SCRIPT_ERROR: answerBoxesContainerElement is null in createCharInputBoxes."); 
             return; 
         }
         answerBoxesContainerElement.innerHTML = ''; 
@@ -235,32 +212,79 @@ document.addEventListener('DOMContentLoaded', () => {
             inputBox.type = 'text';
             inputBox.classList.add('char-box');
             inputBox.maxLength = 1;
-            inputBox.dataset.index = i; // Store index for easy access
+            inputBox.dataset.index = i;
+
+            inputBox.addEventListener('compositionstart', () => {
+                isComposing = true;
+                console.log(`SCRIPT: inputBox ${i} - compositionstart`);
+            });
+
+            inputBox.addEventListener('compositionend', (e) => {
+                isComposing = false;
+                const target = e.target;
+                const currentIndex = parseInt(target.dataset.index);
+                console.log(`SCRIPT: inputBox ${currentIndex} - compositionend. e.data: "${e.data}", target.value: "${target.value}"`);
+
+                // IME確定後、入力値を処理し、必要ならフォーカスを移動
+                // target.value はIMEによって最終的に入力された文字のはず
+                if (target.value.length > 1) { // まれに複数文字入る場合、最初の1文字にする
+                    target.value = target.value.charAt(0);
+                }
+                
+                // 1文字入力されており、かつ最後のボックスでなければ次のボックスへフォーカス
+                if (target.value.length === 1 && currentIndex < charInputBoxes.length - 1) {
+                    console.log(`SCRIPT: inputBox ${currentIndex} (on compositionend) - focus moving to ${currentIndex + 1}`);
+                    charInputBoxes[currentIndex + 1].focus();
+                }
+            });
 
             inputBox.addEventListener('input', (e) => {
-                const value = e.target.value;
-                // If a character is entered and it's not the last box, move to the next box.
-                if (value && i < charInputBoxes.length - 1) {
-                    charInputBoxes[i + 1].focus();
+                const target = e.target;
+                const currentIndex = parseInt(target.dataset.index);
+                console.log(`SCRIPT: inputBox ${currentIndex} - input event. isComposing: ${isComposing}, Value: "${target.value}"`);
+
+                if (isComposing) {
+                    // IME入力変換中は、このinputイベントでの自動フォーカス移動は行わない
+                    // compositionendハンドラが最終的な処理を行う
+                    return; 
+                }
+
+                // IME以外（英数直接入力、ペーストなど）の入力処理
+                let value = target.value;
+
+                if (value.length > 1) { // ペーストなどで複数文字が来た場合
+                    target.value = value.charAt(0); // 最初の1文字だけ採用
+                    value = target.value; // 更新された値で判定
+                }
+                
+                // 1文字入力されており、かつ最後のボックスでなければ次のボックスへフォーカス
+                if (value.length === 1 && currentIndex < charInputBoxes.length - 1) {
+                    console.log(`SCRIPT: inputBox ${currentIndex} (on input, not composing) - focus moving to ${currentIndex + 1}`);
+                    charInputBoxes[currentIndex + 1].focus();
                 }
             });
 
             inputBox.addEventListener('keydown', (e) => {
-                if (e.key === 'Backspace' && e.target.value === '' && i > 0) {
-                    e.preventDefault(); // Prevent default backspace navigation if any
+                // isComposing中は何もしない、または特定のキーのみ許可するなども可能
+                // ここでは、isComposing中はBackspaceや矢印キーもIMEに任せるため、早期リターンはしない。
+                // ただし、IME変換中の意図しない動作を防ぐため、isComposingに応じた条件分岐は有効。
+
+                const currentIndex = parseInt(e.target.dataset.index);
+
+                if (e.key === 'Backspace' && e.target.value === '' && !isComposing && i > 0) {
+                    e.preventDefault(); 
                     charInputBoxes[i - 1].focus();
-                } else if (e.key === 'ArrowLeft' && i > 0) {
+                } else if (e.key === 'ArrowLeft' && !isComposing && i > 0) {
                     e.preventDefault();
                     charInputBoxes[i - 1].focus();
-                } else if (e.key === 'ArrowRight' && i < charInputBoxes.length - 1) {
+                } else if (e.key === 'ArrowRight' && !isComposing && i < charInputBoxes.length - 1) {
                     e.preventDefault();
                     charInputBoxes[i + 1].focus();
                 }
-                // Allow typing single characters. maxlength=1 handles overflow.
             });
 
             inputBox.addEventListener('focus', (e) => {
-                e.target.select(); // Select text in box on focus for easy replacement
+                e.target.select(); 
             });
 
             answerBoxesContainerElement.appendChild(inputBox);
@@ -275,7 +299,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function displayQuestion() {
         console.log(`SCRIPT: displayQuestion() - 問題 ${currentQuestionIndex + 1} / ${selectedQuestions.length}`);
         if (!questionTextElement || !answerLengthHintElement || !feedbackDisplayElement || !generalFeedbackElement || !attemptsLeftDisplayElement || !submitAnswerButton || !nextButton) {
-            console.error("SCRIPT_CRITICAL: displayQuestionに必要なUI要素が不足しています。");
+            console.error("SCRIPT_CRITICAL: displayQuestionに必要なUI要素が不足。");
             displayError("UI表示エラー。");
             return;
         }
@@ -288,7 +312,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             answerLengthHintElement.textContent = `答えは ${currentAnswer.length} 文字です。`;
             createCharInputBoxes(currentAnswer.length); 
-            if (stoneImageElement) stoneImageElement.style.display = 'block'; // stone.pngを表示
+            if (stoneImageElement) stoneImageElement.style.display = 'block'; 
             
             feedbackDisplayElement.innerHTML = "";
             generalFeedbackElement.textContent = "";
@@ -297,12 +321,12 @@ document.addEventListener('DOMContentLoaded', () => {
             attemptsLeft = MAX_ATTEMPTS;
             attemptsLeftDisplayElement.textContent = `挑戦回数: あと ${attemptsLeft} 回`;
             
-            charInputBoxes.forEach(box => box.disabled = false); // Enable boxes
+            charInputBoxes.forEach(box => box.disabled = false);
             submitAnswerButton.disabled = false;
             submitAnswerButton.style.display = 'inline-block';
             nextButton.style.display = 'none';
         } else {
-            console.log("SCRIPT: 全ての問題が終了しました。結果を表示します。");
+            console.log("SCRIPT: 全問題終了。結果表示。");
             showResults();
         }
     }
@@ -310,7 +334,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleSubmitAnswer() {
         if (!submitAnswerButton || submitAnswerButton.disabled) return;
         if (!generalFeedbackElement || !feedbackDisplayElement || !attemptsLeftDisplayElement) {
-             console.error("SCRIPT_CRITICAL: handleSubmitAnswerに必要なUI要素が不足しています。"); return;
+             console.error("SCRIPT_CRITICAL: handleSubmitAnswerに必要なUI要素が不足。"); return;
         }
 
         let userInput = charInputBoxes.map(box => box.value).join('');
@@ -319,7 +343,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (userInput.length !== currentAnswer.length) {
             generalFeedbackElement.textContent = `答えは ${currentAnswer.length} 文字全て入力してください。`;
             generalFeedbackElement.className = "incorrect";
-            // 最初の空のボックス、または最初のボックスにフォーカス
             const firstEmptyBox = charInputBoxes.find(box => box.value === '');
             if (firstEmptyBox) {
                 firstEmptyBox.focus();
@@ -370,7 +393,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 generalFeedbackElement.textContent = `不正解です。`;
                 generalFeedbackElement.className = "incorrect";
                 if (charInputBoxes.length > 0) charInputBoxes[0].focus(); 
-                charInputBoxes.forEach(box => box.select()); // 内容を選択して再入力しやすくする
+                charInputBoxes.forEach(box => box.select()); 
             } else {
                 generalFeedbackElement.textContent = `残念！正解は「${currentAnswer}」でした。`;
                 generalFeedbackElement.className = "incorrect";
@@ -398,13 +421,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if(quizFooterElement) quizFooterElement.style.display = 'none';
         if(resultAreaElement) resultAreaElement.style.display = 'block';
         if(finalScoreElement) finalScoreElement.textContent = score;
-        // totalQuestionsElement は startGame で設定済み
     }
 
     // --- イベントリスナー設定 ---
     if (submitAnswerButton) {
         submitAnswerButton.addEventListener('click', handleSubmitAnswer);
-    } // else のエラー出力はスクリプト冒頭の checkCriticalElementsExist で行う
+    } 
 
     if (nextButton) {
         nextButton.addEventListener('click', () => {
