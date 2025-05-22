@@ -19,23 +19,56 @@ document.addEventListener('DOMContentLoaded', () => {
     let selectedQuestions = []; // 表示する問題を格納する配列
 
     // JSONファイルから問題を読み込む
+// script.js の中の loadQuestions 関数を以下のように修正します。
+// (他の部分は前回の回答のままで大丈夫です)
+
     async function loadQuestions() {
         try {
-            const response = await fetch('train_questions.json');
+            const response = await fetch('train_questions.json'); // ファイル名はあなたのものに合わせてください
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                throw new Error(`HTTP error! status: ${response.status} while fetching ${response.url}`);
             }
-            questions = await response.json();
-            if (!questions || questions.length === 0) {
-                questionTextElement.textContent = '問題の読み込みに失敗しました。データが空のようです。';
+            
+            // NDJSON形式のデータを処理するために修正
+            const textData = await response.text();
+            if (!textData.trim()) { // データが空の場合のチェック
+                displayError('問題データが空か、ファイルの内容がありません。');
+                return;
+            }
+            allQuestions = textData.trim().split('\n').map(line => {
+                try {
+                    return JSON.parse(line);
+                } catch (parseError) {
+                    console.error('JSONの行の解析に失敗しました:', line, parseError);
+                    // 不正な行はスキップするか、エラー処理を強化することもできます
+                    return null; // 不正な行はnullとしてマーク
+                }
+            }).filter(q => q !== null); // nullになった不正な行を除外
+
+            if (!allQuestions || allQuestions.length === 0) {
+                displayError('問題データの解析に失敗したか、有効な問題がありません。');
                 return;
             }
             startGame();
         } catch (error) {
-            console.error('問題の読み込みに失敗しました:', error);
-            questionTextElement.textContent = '問題の読み込み中にエラーが発生しました。';
+            console.error('問題の読み込みに失敗:', error);
+            displayError(`問題の読み込みエラー: ${error.message}。ファイルパスやJSONファイルの形式、内容を確認してください。`);
         }
     }
+
+// displayError 関数 (もし前回コードになければ、以下を追加または確認してください)
+    function displayError(message) {
+        questionTextElement.textContent = message;
+        if (answerLengthHintElement) answerLengthHintElement.style.display = 'none';
+        const inputArea = document.getElementById('input-area');
+        if (inputArea) inputArea.style.display = 'none';
+        if (attemptsLeftDisplayElement) attemptsLeftDisplayElement.style.display = 'none';
+        if (generalFeedbackElement) generalFeedbackElement.style.display = 'none';
+        // 他に非表示にしたい要素があればここに追加
+    }
+
+// startGame, displayQuestion などの他の関数は前回の回答の通りです。
+// allQuestions 配列が正しくこの形式で読み込まれれば、残りのロジックは機能するはずです。
 
     function startGame() {
         currentQuestionIndex = 0;
