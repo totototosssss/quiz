@@ -3,19 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>クイズアプリ</title>
+    <title>タイピングクイズ</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="quiz-container">
-        <h1>クイズタイム！</h1>
+        <h1>タイピングクイズ！</h1>
         <div id="question-area">
             <h2 id="question-text">ここに問題が表示されます</h2>
-            <div id="answer-options" class="answer-options">
+            <p id="answer-length-hint">答えの文字数ヒント</p>
+            <div id="input-area">
+                <input type="text" id="answer-input" placeholder="答えを入力...">
+                <button id="submit-answer-button">解答する</button>
+            </div>
+            <div id="feedback-display" class="feedback-display">
                 </div>
-        </div>
-        <div id="feedback-area" class="feedback-area">
-            <p id="feedback-text"></p>
+            <p id="general-feedback"></p>
+            <p id="attempts-left-display">挑戦回数: あと 3 回</p>
         </div>
         <div id="controls-area" class="controls-area">
             <button id="next-button" style="display:none;">次の問題へ</button>
