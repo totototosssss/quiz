@@ -383,3 +383,45 @@ h2#question-text {
         font-size: 1.05em; 
     }
 }
+
+/* ...既存のスタイルはそのまま... */
+
+/* 注意事項エリアのスタイル */
+.disclaimers {
+    margin-top: 15px; /* エラーメッセージまたはタイトルからのスペース */
+    margin-bottom: 30px; /* スタートボタンとのスペース */
+    padding: 10px 15px;
+    background-color: rgba(0, 0, 0, 0.03); /* 目立ちすぎない背景色 */
+    border-radius: var(--border-radius-md);
+    max-width: 500px; /* 横幅が広がりすぎないように */
+    margin-left: auto;
+    margin-right: auto;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.disclaimers p.disclaimer-item {
+    font-size: 0.75em; /* 小さく表示 */
+    color: var(--color-text-secondary); /* やや薄めの文字色 */
+    line-height: 1.6; /* 行間を少し広めに */
+    text-align: left; /* 注意事項は左寄せの方が見やすい */
+    margin-bottom: 6px; /* 各項目間のスペース */
+    padding-left: 0.5em; /*箇条書き風のインデント */
+}
+
+.disclaimers p.disclaimer-item:first-child { /* 「【注意事項】」のタイトル部分 */
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin-bottom: 10px;
+    text-align: center; /* タイトルは中央寄せ */
+    padding-left: 0;
+}
+
+.disclaimers p.disclaimer-item:last-child {
+    margin-bottom: 0;
+}
+
+/* start-screen-error のマージン調整 (注意事項とのバランス) */
+#start-screen-error {
+    margin-top: -10px; /* タイトルとの間を少し詰める */
+    margin-bottom: 15px; /* 注意事項との間隔 */
+}
