@@ -1,16 +1,57 @@
+/* Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&family=Noto+Sans+JP:wght@400;500;700&display=swap');
+
+:root {
+    --font-primary: 'M PLUS Rounded 1c', 'Noto Sans JP', sans-serif;
+    --font-accent: 'M PLUS Rounded 1c', sans-serif;
+
+    --color-bg-gradient-start: #667eea; /* #6dd5ed; */
+    --color-bg-gradient-end: #764ba2; /* #2193b0; */
+    
+    --color-text-primary: #34495e;
+    --color-text-secondary: #596a7a;
+    --color-text-light: #7f8c8d;
+    --color-text-on-accent: #ffffff;
+
+    --color-surface: #ffffff;
+    --color-surface-alpha: rgba(255, 255, 255, 0.97); /* 少し透明度を上げる */
+    --color-border: #e0e6ed;
+    --color-shadow: rgba(44, 62, 80, 0.15);
+
+    --color-accent-primary: #3498db;
+    --color-accent-primary-dark: #2980b9;
+    --color-accent-secondary: #e67e22;
+    --color-accent-secondary-dark: #d35400;
+    
+    --color-correct: #2ecc71; /* #27ae60; */
+    --color-correct-dark: #27ae60;
+    --color-incorrect: #e74c3c;
+    --color-incorrect-dark: #c0392b;
+    --color-info: var(--color-accent-primary);
+
+    --border-radius-sm: 6px;
+    --border-radius-md: 12px;
+    --border-radius-lg: 20px;
+    --border-radius-pill: 50px;
+
+    --shadow-soft: 0 4px 15px var(--color-shadow);
+    --shadow-strong: 0 8px 25px var(--color-shadow);
+}
+
 body {
-    font-family: 'M PLUS Rounded 1c', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-family: var(--font-primary);
     display: flex;
-    flex-direction: column; 
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
     margin: 0;
-    background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%); 
-    color: #333;
+    background: linear-gradient(135deg, var(--color-bg-gradient-start) 0%, var(--color-bg-gradient-end) 100%);
+    color: var(--color-text-primary);
     padding: 20px;
     box-sizing: border-box;
-    font-weight: 500; 
+    font-weight: 500;
+    transition: background 0.5s ease; /* 背景色のトランジション */
 }
 
 .app-container {
@@ -22,98 +63,104 @@ body {
 
 #start-screen {
     text-align: center;
-    background-color: rgba(255, 255, 255, 0.9);
-    padding: 40px;
-    border-radius: 16px;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px; /* クイズコンテナとの間隔 */
+    background-color: var(--color-surface-alpha);
+    padding: 40px 50px;
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-strong);
+    margin-bottom: 30px;
 }
 
 #start-screen h1 {
-    font-size: 2.8em;
-    color: #2c3e50;
-    margin-bottom: 30px;
+    font-family: var(--font-accent);
+    font-size: clamp(2.2em, 5vw, 2.8em); /* Responsive font size */
+    color: var(--color-text-primary);
+    margin-bottom: 25px;
     font-weight: 800;
 }
-#start-screen-error { /* スタート画面のエラーメッセージスタイル */
-    color: #e74c3c; /* 赤色 */
+#start-screen-error {
+    color: var(--color-incorrect);
     font-weight: 700;
-    margin-bottom: 15px;
-    min-height: 1.2em; /* エラーメッセージがないときも高さを確保 */
+    margin: -10px 0 20px 0;
+    min-height: 1.2em;
+    font-size: 0.9em;
 }
 
-
-.big-button { 
-    background: linear-gradient(45deg, #f39c12, #e74c3c);
-    color: white;
+.big-button {
+    background: linear-gradient(45deg, var(--color-accent-secondary), var(--color-accent-secondary-dark));
+    color: var(--color-text-on-accent);
     border: none;
-    padding: 18px 35px;
-    border-radius: 50px; 
+    padding: 16px 38px; /* 少し調整 */
+    border-radius: var(--border-radius-pill);
     cursor: pointer;
-    font-size: 1.3em;
+    font-size: 1.2em; /* 少し調整 */
     font-weight: 700;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    text-transform: uppercase; 
-    letter-spacing: 1px; 
+    transition: all 0.25s ease-out;
+    box-shadow: var(--shadow-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.08em; /* 少し調整 */
 }
 .big-button:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+    transform: translateY(-4px) scale(1.02); /* よりダイナミックなホバー */
+    box-shadow: 0 7px 22px rgba(0,0,0,0.22);
 }
 .big-button:active {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    transform: translateY(-1px) scale(0.98);
+    box-shadow: 0 3px 12px rgba(0,0,0,0.2);
+}
+.big-button:disabled {
+    background: #bdc3c7;
+    box-shadow: none;
+    transform: none;
+    cursor: not-allowed;
 }
 
-
 .quiz-container {
-    background-color: rgba(255, 255, 255, 0.95);
-    padding: 30px 35px; 
-    border-radius: 16px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    background-color: var(--color-surface-alpha);
+    padding: 30px 40px;
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-strong);
     width: 100%;
-    max-width: 700px; 
+    max-width: 720px; /* 少し広く */
     text-align: center;
-    display: flex; 
+    display: flex;
     flex-direction: column;
 }
 
 .quiz-header {
-    margin-bottom: 20px;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 15px;
+    margin-bottom: 25px;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 20px;
 }
-.quiz-header h1#quiz-title { 
-    font-size: 1.8em; 
-    color: #2c3e50;
-    margin-bottom: 10px;
-    font-weight: 700;
+.quiz-header h1#quiz-title {
+    font-family: var(--font-accent);
+    font-size: clamp(1.6em, 4vw, 2em);
+    color: var(--color-text-primary);
+    margin-bottom: 12px;
+    font-weight: 800;
 }
 #question-progress-display {
-    font-size: 1em;
-    color: #3498db;
+    font-size: 1.05em;
+    color: var(--color-accent-primary);
     font-weight: 700;
 }
 
-
 #quiz-main-content {
-    margin-bottom: 20px;
+    margin-bottom: 25px;
 }
 
 h2#question-text {
-    font-size: 1.5em; 
-    margin-bottom: 15px;
-    min-height: 45px;
-    color: #34495e;
-    line-height: 1.5;
+    font-size: clamp(1.3em, 3.5vw, 1.6em);
+    margin-bottom: 20px;
+    min-height: 50px;
+    color: var(--color-text-primary);
+    line-height: 1.55;
     font-weight: 700;
 }
 
 #answer-length-hint {
-    font-size: 0.9em;
-    color: #7f8c8d;
-    margin-bottom: 25px; 
+    font-size: 0.95em;
+    color: var(--color-text-light);
+    margin-bottom: 25px;
 }
 
 #input-area {
@@ -127,179 +174,212 @@ h2#question-text {
 #answer-boxes-container {
     display: flex;
     justify-content: center;
-    gap: 8px; 
+    gap: 10px; /* 少し広げる */
     flex-wrap: wrap; 
 }
 
 .char-box {
-    width: 48px; 
-    height: 52px; 
-    font-size: 1.9em; 
+    width: 50px; 
+    height: 55px; 
+    font-size: 2em; 
     text-align: center;
-    border: 2px solid #dce4ec; 
-    border-radius: 8px;
+    border: 2px solid var(--color-border);
+    border-radius: var(--border-radius-md); /* 少し丸く */
     outline: none;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    font-family: inherit; 
-    caret-color: #3498db;
-    color: #2c3e50;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease;
+    font-family: var(--font-accent); 
+    caret-color: var(--color-accent-primary);
+    color: var(--color-text-primary);
     font-weight: 700;
+    background-color: #f8f9fa; /* 少し背景色 */
 }
-
 .char-box:focus {
-    border-color: #3498db;
-    box-shadow: 0 0 10px rgba(52, 152, 219, 0.4);
+    border-color: var(--color-accent-primary);
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.25); /* フォーカスリング */
+    transform: scale(1.05); /* 少し拡大 */
 }
 .char-box:disabled { 
-    background-color: #f8f9fa;
+    background-color: #e9ecef; /* より明確なdisabled */
     color: #adb5bd;
+    border-color: #dee2e6;
 }
-
 
 #stone-image {
     display: block; 
-    max-width: 70px; 
+    max-width: 60px; /* 少し小さく */
     height: auto;
-    opacity: 0.6;
-    margin-top: 10px; 
+    opacity: 0.5; /* 少し薄く */
+    margin-top: 15px; 
 }
 
 #feedback-display {
-    margin: 20px 0;
-    font-size: 2em; 
-    min-height: 38px;
-    letter-spacing: 0.3em;
-    color: #2c3e50;
+    margin: 25px 0;
+    font-size: 2.2em; 
+    min-height: 40px;
+    letter-spacing: 0.35em;
+    color: var(--color-text-primary);
 }
 
 #general-feedback {
     font-weight: 700; 
-    min-height: 24px;
-    margin-bottom: 15px; 
-    font-size: 1.15em; 
+    min-height: 28px; /* 少し高く */
+    margin-bottom: 18px; 
+    font-size: 1.2em; 
+    transition: color 0.3s ease; /* 色変化をスムーズに */
 }
-
-#general-feedback.correct {
-    color: #27ae60; 
-}
-
-#general-feedback.incorrect {
-    color: #e74c3c; 
-}
-#general-feedback.info { /* 諦めた時の情報表示用 */
-    color: #3498db; /* インフォメーションブルー */
-    font-style: italic;
-}
-
+#general-feedback.correct { color: var(--color-correct); }
+#general-feedback.incorrect { color: var(--color-incorrect); }
+#general-feedback.info { color: var(--color-info); font-style: normal; }
 
 #attempts-left-display {
-    font-size: 0.95em; 
-    color: #7f8c8d; 
-    margin-bottom: 20px;
+    font-size: 1em; 
+    color: var(--color-text-secondary); 
+    margin-bottom: 25px;
     font-weight: 700;
 }
 
 #action-buttons {
-    margin-top: 25px; 
+    margin-top: 30px; 
     display: flex;
     justify-content: center;
-    align-items: center; /* ボタンの高さを揃える */
-    gap: 10px; /* ボタン間の間隔を少し狭く */
-    flex-wrap: wrap; /* 画面幅が狭い場合に折り返す */
+    align-items: center; 
+    gap: 15px; 
+    flex-wrap: wrap; 
 }
 
 #submit-answer-button, 
 #next-button,
-#give-up-button { /* 諦めるボタンも同じスタイルグループに */
-    background: linear-gradient(45deg, #3498db, #2980b9);
-    color: white;
+#give-up-button { 
+    background-color: var(--color-accent-primary);
+    color: var(--color-text-on-accent);
     border: none;
-    padding: 12px 22px; /* 少し小さく */
-    border-radius: 8px;
+    padding: 14px 30px; 
+    border-radius: var(--border-radius-pill);
     cursor: pointer;
-    font-size: 1em; /* 少し小さく */
+    font-size: 1.05em; 
     font-weight: 700;
-    transition: all 0.2s ease; 
-    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
-    min-width: 120px; /* ボタンの最小幅 */
+    transition: all 0.2s ease-out; 
+    box-shadow: var(--shadow-soft);
+    letter-spacing: 0.03em;
 }
-#give-up-button { /* 諦めるボタンは少し目立たない色に */
-    background: linear-gradient(45deg, #e67e22, #d35400); /* オレンジ系 */
+#give-up-button { 
+    background-color: var(--color-accent-secondary);
 }
-
 
 #submit-answer-button:hover:not(:disabled),
 #next-button:hover,
 #give-up-button:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 12px rgba(0,0,0,0.2);
+    transform: translateY(-3px) scale(1.03);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.2);
 }
 #submit-answer-button:active:not(:disabled),
 #next-button:active,
 #give-up-button:active:not(:disabled) {
-    transform: translateY(0px);
-    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    transform: translateY(-1px) scale(0.99);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.18);
 }
 
-
 #submit-answer-button:disabled,
-#give-up-button:disabled { /* 諦めるボタンもdisabledスタイル */
-    background: #bdc3c7; 
+#give-up-button:disabled { 
+    background-color: #ced4da; /* より明確なdisabled色 */
     cursor: not-allowed;
     box-shadow: none;
+    transform: none;
 }
 
 #quiz-footer {
     margin-top: 30px; 
     padding-top: 20px;
-    border-top: 1px solid #e0e6ed; 
+    border-top: 1px solid var(--color-border); 
 }
 
 #score-area {
-    font-size: 1.2em; 
-    color: #34495e;
+    font-size: 1.25em; 
+    color: var(--color-text-primary);
     font-weight: 700;
 }
 #score-area #score {
-    color: #e67e22; 
-    font-size: 1.3em; 
+    color: var(--color-accent-secondary-dark); 
+    font-size: 1.35em; 
+    margin-left: 5px;
 }
 
-
 .result-area {
-    margin-top: 20px;
-    padding: 30px 40px; 
-    background-color: rgba(255, 255, 255, 0.95); 
-    border-radius: 16px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    margin-top: 30px;
+    padding: 35px 45px; 
+    background-color: var(--color-surface-alpha); 
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-strong);
     width: 100%;
-    max-width: 600px; 
+    max-width: 620px; 
     text-align: center;
 }
 .result-area h2 {
-    font-size: 2em; 
-    color: #2c3e50;
-    margin-bottom: 20px;
+    font-family: var(--font-accent);
+    font-size: 2.3em; 
+    color: var(--color-text-primary);
+    margin-bottom: 25px;
     font-weight: 800;
 }
 .result-area p {
-    font-size: 1.25em; 
-    color: #34495e;
-    margin-bottom: 25px;
-    line-height: 1.6;
+    font-size: 1.3em; 
+    color: var(--color-text-secondary);
+    margin-bottom: 28px;
+    line-height: 1.65;
 }
 .result-area #final-score, .result-area #final-points {
     font-weight: 800; 
-    font-size: 1.5em; 
-    color: #e74c3c; 
+    font-size: 1.6em; 
+    color: var(--color-correct-dark); 
 }
-.result-area #total-questions-in-game { 
-    font-weight: normal;
-    font-size: 0.9em; 
-    color: #7f8c8d;
+.result-area #final-points {
+    color: var(--color-accent-secondary-dark); /* ポイントの色を変える */
+}
+.resultArea #total-questions-in-game { 
+    font-weight: 500; /* 少し細く */
+    font-size: 1em; 
+    color: var(--color-text-light);
 }
 #restart-button { /* .big-button を継承 */
-    background: linear-gradient(45deg, #2ecc71, #27ae60); /* 緑系 */
+    background: linear-gradient(45deg, var(--color-correct), var(--color-correct-dark)); 
 }
 #restart-button:hover {
-    background: linear
+    background: linear-gradient(45deg, var(--color-correct-dark), #25a25a); /* 少し濃く */
+}
+
+@media (max-width: 700px) { 
+    .quiz-container, #start-screen, .result-area {
+        padding: 20px 25px;
+        margin-left: 10px;
+        margin-right: 10px;
+    }
+    #start-screen h1, .result-area h2 {
+        font-size: 2em;
+    }
+     .quiz-header h1#quiz-title {
+        font-size: 1.5em;
+    }
+    h2#question-text {
+        font-size: 1.25em;
+    }
+    .char-box {
+        width: clamp(32px, 11vw, 42px); 
+        height: clamp(38px, 12vw, 48px);
+        font-size: clamp(1.3em, 5.5vw, 1.7em);
+    }
+    #feedback-display {
+        font-size: clamp(1.3em, 5.5vw, 1.7em);
+    }
+    #action-buttons {
+        flex-direction: column; 
+        gap: 12px;
+    }
+    #submit-answer-button,
+    #next-button,
+    #give-up-button,
+    .big-button { 
+        width: 100%; 
+        padding: 15px;
+        font-size: 1.05em; 
+    }
+}
