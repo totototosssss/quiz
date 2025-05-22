@@ -5,23 +5,17 @@ body {
     align-items: center;
     min-height: 100vh;
     margin: 0;
-    background-color: #f0f0f0; /* 画像が読み込めない場合のフォールバック色 */
-    /* home.png が style.css と同じ階層にあることを確認してください。 */
-    /* もし images フォルダなど別の場所なら url('images/home.png') のように変更 */
-    background-image: url('home.png');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
+    background-color: #eef2f7; /* シンプルな背景色 */
     color: #333;
     padding: 20px;
     box-sizing: border-box;
 }
 
 .quiz-container {
-    background-color: rgba(255, 255, 255, 0.92); /* 背景画像が見えるように少し透明度を調整 */
+    background-color: #ffffff;
     padding: 25px;
     border-radius: 10px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
     width: 100%;
     max-width: 600px;
     text-align: center;
@@ -32,11 +26,11 @@ h1 {
     margin-bottom: 20px;
 }
 
-h2#question-text { /* IDセレクタで詳細度を上げる */
+h2#question-text {
     font-size: 1.4em;
     margin-bottom: 15px;
     min-height: 40px;
-    color: #333; /* 初期メッセージにも適用 */
+    color: #333;
 }
 
 #answer-length-hint {
@@ -46,7 +40,7 @@ h2#question-text { /* IDセレクタで詳細度を上げる */
 }
 
 #input-area {
-    display: flex; /* JavaScript で block や flex に変更して表示 */
+    display: flex;
     justify-content: center;
     align-items: center;
     margin-bottom: 15px;
