@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const answerLengthHintElement = document.getElementById('answer-length-hint');
     const inputAreaElement = document.getElementById('input-area');
     const answerBoxesContainerElement = document.getElementById('answer-boxes-container');
-    const stoneImageElement = document.getElementById('stone-image'); 
+    const stoneImageElement = document.getElementById('stone-image');
     const feedbackDisplayElement = document.getElementById('feedback-display');
     const generalFeedbackElement = document.getElementById('general-feedback');
     const attemptsLeftDisplayElement = document.getElementById('attempts-left-display');
@@ -38,61 +38,49 @@ document.addEventListener('DOMContentLoaded', () => {
     const POINTS_ATTEMPT_1 = 10, POINTS_ATTEMPT_2 = 5, POINTS_ATTEMPT_3 = 3;
     const NEW_QUIZ_TITLE = "クイズwith研一";
 
-    function checkCriticalElementsExistAndLog() {
-        console.log("SCRIPT: checkCriticalElementsExistAndLog() を呼び出しました。HTML要素の存在を確認します。");
-        const elementsToVerify = {
-            'start-screen': startScreenElement, 'start-game-button': startGameButton, 
-            'start-screen-error': startScreenErrorElement, 'quiz-container': quizContainerElement,
-            'quiz-title': quizTitleElement, 'question-progress-display': questionProgressDisplayElement,
-            'question-text': questionTextElement, 'answer-length-hint': answerLengthHintElement,
-            'input-area': inputAreaElement, 'answer-boxes-container': answerBoxesContainerElement,
-            'feedback-display': feedbackDisplayElement, 'general-feedback': generalFeedbackElement,
-            'attempts-left-display': attemptsLeftDisplayElement, 'action-buttons': actionButtonsElement,
-            'submit-answer-button': submitAnswerButton, 'give-up-button': giveUpButton,
-            'next-button': nextButton, 'score-area': scoreAreaElement, 'score': scoreElement,
-            'quiz-footer': quizFooterElement, 'result-area': resultAreaElement,
-            'final-score': finalScoreElement, 'total-questions-in-game': totalQuestionsInGameElement,
-            'final-points': finalPointsElement, 'restart-button': restartButton,
-            'quiz-main-content': quizMainContentElement
-        };
-        let allCriticalFound = true;
-        for (const idName in elementsToVerify) {
-            const elementObject = elementsToVerify[idName];
-            if (!elementObject) {
-                if (!document.getElementById(idName)) {
-                     console.error(`SCRIPT_CRITICAL_ERROR: HTML要素 (ID: ${idName}) がDOMに見つかりません。`);
-                } else {
-                    console.error(`SCRIPT_CRITICAL_ERROR: JavaScript変数 '${Object.keys(elementsToVerify).find(key => key === idName)}Element' がnullですが、HTML (ID: ${idName}) には要素が存在するようです。スクリプトの初期化順序の問題かもしれません。`);
-                }
-                allCriticalFound = false;
+    function verifyElements() {
+        console.log("SCRIPT: HTML要素の存在確認を開始します。");
+        const elementIds = [
+            'start-screen', 'start-game-button', 'start-screen-error', 'quiz-container',
+            'quiz-title', 'question-progress-display', 'question-text', 'answer-length-hint',
+            'input-area', 'answer-boxes-container', /* 'stone-image', // オプション扱い */
+            'feedback-display', 'general-feedback', 'attempts-left-display', 'action-buttons',
+            'submit-answer-button', 'give-up-button', 'next-button', 'score-area', 'score',
+            'quiz-footer', 'result-area', 'final-score', 'total-questions-in-game',
+            'final-points', 'restart-button', 'quiz-main-content'
+        ];
+        let allFound = true;
+        elementIds.forEach(id => {
+            if (!document.getElementById(id)) {
+                console.error(`SCRIPT_CRITICAL_ERROR: HTML要素 (ID: ${id}) がDOMに見つかりません。`);
+                allFound = false;
             }
-        }
-        if (!allCriticalFound) {
+        });
+
+        if (!allFound) {
             console.error("SCRIPT_CRITICAL_ERROR: ページ初期化に必要なHTML要素が1つ以上不足しています。上記のログで具体的な要素IDを確認し、index.htmlファイルに正しいIDを持つ要素が存在するか確認してください。");
+            const userAlertMessage = "クイズの初期化に失敗しました。\n必要なHTMLの部品が見つからないようです。\nお手数ですが、ブラウザのデベロッパーコンソールを開き、「SCRIPT_CRITICAL_ERROR」から始まるエラーメッセージを確認し、HTMLファイルに必要なIDを持つ要素が存在するかご確認ください。";
+            if (startScreenErrorElement) { // startScreenErrorElement はこのチェックリストに入っているので、ここに来る前にnullチェックが必要
+                const errEl = document.getElementById('start-screen-error'); // 直接再取得
+                if (errEl) {
+                    errEl.textContent = "ページエラー。HTMLの部品が不足しています。コンソールを確認してください。";
+                    errEl.style.display = 'block';
+                } else { alert(userAlertMessage); }
+            } else { alert(userAlertMessage); }
+            if (startGameButton) startGameButton.disabled = true;
         }
-        return allCriticalFound;
+        return allFound;
     }
 
-    if (!checkCriticalElementsExistAndLog()) {
-        const userAlertMessage = "クイズの初期化に失敗しました。\n必要なHTMLの部品が見つからないようです。\nお手数ですが、ブラウザのデベロッパーコンソールを開き、「SCRIPT_CRITICAL_ERROR」から始まるエラーメッセージを確認し、HTMLファイルに必要なIDを持つ要素が存在するかご確認ください。";
-        if (startScreenErrorElement) {
-            startScreenErrorElement.textContent = "ページエラー。HTMLの部品が不足しています。コンソールを確認してください。";
-            startScreenErrorElement.style.display = 'block';
-        } else {
-            const bodyErrorMsg = document.createElement('p');
-            bodyErrorMsg.style.color = 'red'; bodyErrorMsg.style.fontWeight = 'bold'; bodyErrorMsg.style.padding = '20px'; bodyErrorMsg.style.textAlign = 'center';
-            bodyErrorMsg.textContent = userAlertMessage.replace(/\n/g, ' ');
-            if (document.body) { document.body.insertBefore(bodyErrorMsg, document.body.firstChild); }
-            else { alert(userAlertMessage); }
-        }
-        if (startGameButton) startGameButton.disabled = true;
-        return; 
+    if (!verifyElements()) {
+        return; // 必須要素がなければ処理を中断
     }
     
     document.title = NEW_QUIZ_TITLE;
     const h1InStartScreen = startScreenElement.querySelector('h1');
     if (h1InStartScreen) h1InStartScreen.textContent = NEW_QUIZ_TITLE;
     if (quizTitleElement) quizTitleElement.textContent = NEW_QUIZ_TITLE;
+
 
     function displayStartScreenError(message) {
         console.warn("SCRIPT: displayStartScreenError - ", message);
@@ -104,6 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function initializeApp() {
         console.log("SCRIPT: initializeApp() が呼び出されました。"); 
         await loadQuestions(); 
+        
         if (startGameButton) {
             if (allQuestions.length > 0) {
                 startGameButton.disabled = false; 
@@ -114,7 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.warn("SCRIPT: 問題が0件、または読み込み失敗のため、スタートボタンは無効のままです。");
             }
         } else {
-             console.error("SCRIPT_CRITICAL_ERROR: initializeApp - スタートボタン(startGameButton)がnullです。");
+             console.error("SCRIPT_CRITICAL_ERROR: initializeApp - スタートボタン(startGameButton)がnullです。verifyElementsで捕捉されるべきエラーです。");
         }
     }
 
@@ -175,6 +164,8 @@ document.addEventListener('DOMContentLoaded', () => {
         let shuffled = shuffleArray([...allQuestions]); const numToShowThisGame = Math.min(NUM_QUESTIONS_TO_PLAY, shuffled.length);
         if (numToShowThisGame === 0) { console.error("SCRIPT: startGame - numToShowThisGame is 0."); displayErrorInQuiz("プレイできる問題がありません。"); return; }
         selectedQuestions = shuffled.slice(0, numToShowThisGame); console.log(`SCRIPT: 今回プレイする問題数: ${selectedQuestions.length}`);
+        if (totalQuestionsElement) totalQuestionsElement.textContent = selectedQuestions.length; // ここで総問題数を設定
+
         if(inputAreaElement) inputAreaElement.style.display = 'flex'; if(answerLengthHintElement) answerLengthHintElement.style.display = 'block';
         if(feedbackDisplayElement) { feedbackDisplayElement.style.display = 'block'; feedbackDisplayElement.innerHTML = ''; }
         if(generalFeedbackElement) { generalFeedbackElement.style.display = 'block'; generalFeedbackElement.textContent = ""; }
@@ -182,7 +173,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if(actionButtonsElement) actionButtonsElement.style.display = 'flex';
         if(submitAnswerButton) submitAnswerButton.style.display = 'inline-block';
         if(giveUpButton) giveUpButton.style.display = 'inline-block'; 
-        if(stoneImageElement) stoneImageElement.style.display = 'none'; 
+        if(stoneImageElement && stoneImageElement.src && !stoneImageElement.src.endsWith('#')) { // srcが設定されていれば表示
+             stoneImageElement.style.display = 'block'; 
+        } else if (stoneImageElement) {
+            stoneImageElement.style.display = 'none';
+        }
         displayQuestion();
     }
 
@@ -247,7 +242,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if(questionProgressDisplayElement) questionProgressDisplayElement.textContent = `${selectedQuestions.length}問中 ${currentQuestionIndex + 1}問目`;
             if(answerLengthHintElement) answerLengthHintElement.textContent = `答えは ${currentAnswer.length} 文字です。`;
             createCharInputBoxes(currentAnswer.length); 
-            if (stoneImageElement) stoneImageElement.style.display = 'block'; 
+            if (stoneImageElement && stoneImageElement.src && (stoneImageElement.src.includes('stone.png'))) { // Check if src is set and valid
+                stoneImageElement.style.display = 'block'; 
+            } else if (stoneImageElement) {
+                stoneImageElement.style.display = 'none';
+            }
             if(feedbackDisplayElement) feedbackDisplayElement.innerHTML = "";
             if(generalFeedbackElement) { generalFeedbackElement.textContent = ""; generalFeedbackElement.className = ""; }
             attemptsLeft = MAX_ATTEMPTS; 
@@ -284,6 +283,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (attemptsLeft === MAX_ATTEMPTS) { pointsAwarded = POINTS_ATTEMPT_1; }
             else if (attemptsLeft === MAX_ATTEMPTS - 1) { pointsAwarded = POINTS_ATTEMPT_2; }
             else if (attemptsLeft === MAX_ATTEMPTS - 2) { pointsAwarded = POINTS_ATTEMPT_3; }
+            // else: 0 points if attemptsLeft was already < MAX_ATTEMPTS - 2 (e.g. 0)
+
             totalPoints += pointsAwarded; correctAnswersCount++; 
             if(generalFeedbackElement) {generalFeedbackElement.textContent = `正解！ 🎉 ${pointsAwarded}ポイント獲得！`; generalFeedbackElement.className = "correct";}
             feedbackSymbols = currentAnswer.split('').map(() => '✅');
@@ -296,16 +297,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const answerCharCounts = {};
             for (const char of answerChars) { answerCharCounts[char] = (answerCharCounts[char] || 0) + 1; }
             
-            // Pass 1: Greens (✅)
             for (let i = 0; i < answerChars.length; i++) { 
                 if (i < inputChars.length && inputChars[i] === answerChars[i]) { 
                     feedbackSymbols[i] = '✅'; 
-                    if (answerCharCounts[inputChars[i]] > 0) { // Check before decrementing
+                    if (answerCharCounts[inputChars[i]] > 0) { 
                         answerCharCounts[inputChars[i]]--;
                     }
                 }
             }
-            // Pass 2: Yellows (☑️) and remaining Grays (❌)
             for (let i = 0; i < answerChars.length; i++) { 
                 if (feedbackSymbols[i] === '➖' && i < inputChars.length) { 
                     if (answerChars.includes(inputChars[i]) && answerCharCounts[inputChars[i]] > 0) { 
@@ -317,21 +316,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else if (feedbackSymbols[i] === '➖' && i >= inputChars.length) { 
                     feedbackSymbols[i] = '❌'; 
                 }
-            }
+            } // End of feedback symbols generation loops
 
             if (attemptsLeft > 0) {
                 if(generalFeedbackElement) {generalFeedbackElement.textContent = `不正解です。`; generalFeedbackElement.className = "incorrect";}
                 if (charInputBoxes.length > 0) {charInputBoxes[0].focus();}
-            } else {
+            } else { // No attempts left
                 if(generalFeedbackElement) {generalFeedbackElement.textContent = `残念！正解は「${currentAnswer}」でした。`; generalFeedbackElement.className = "incorrect";}
                 finalizeAttempt(false); 
             }
-        }
+        } // End of if(isCorrect) else block
         
         if(feedbackDisplayElement) {feedbackDisplayElement.innerHTML = feedbackSymbols.join(' ');}
         if(attemptsLeftDisplayElement) {attemptsLeftDisplayElement.textContent = `挑戦回数: あと ${attemptsLeft} 回`;}
         updateScoreDisplay();
-    }
+    } // End of handleSubmitAnswer
 
     function handleGiveUp() {
         console.log("SCRIPT: 諦めるボタンがクリックされました。");
@@ -354,9 +353,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (giveUpButton) giveUpButton.disabled = true; 
         if (nextButton) nextButton.style.display = 'inline-block';
     }
-
     function updateScoreDisplay() { if (scoreElement) scoreElement.textContent = totalPoints; }
-
     function showResults() {
         if(quizContainerElement) quizContainerElement.style.display = 'none';
         if(resultAreaElement) resultAreaElement.style.display = 'block';   
@@ -366,6 +363,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Event Listeners
+    // startGameButton listener is set in initializeApp after loadQuestions
+    
     if (submitAnswerButton) { submitAnswerButton.addEventListener('click', handleSubmitAnswer); console.log("SCRIPT: '解答する' ボタンにリスナー設定。"); } 
     else { console.error("SCRIPT_ERROR: submitAnswerButton がnullのためリスナー未設定。"); }
     
@@ -380,12 +379,9 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log("SCRIPT: リスタートボタンクリック。");
             if (resultAreaElement) resultAreaElement.style.display = 'none';
             if (startScreenElement) startScreenElement.style.display = 'block';
-            // スタートボタンの状態は initializeApp -> loadQuestions で制御されるので、ここでは直接触らない
-            // ただし、問題が既に読み込まれているなら有効にしてもよい
-            if (startGameButton && allQuestions.length > 0) {
-                 startGameButton.disabled = false;
-            } else if (startGameButton) { // 問題がない、またはロード失敗してる場合
-                 startGameButton.disabled = true;
+            if (startGameButton) { // startGameButtonは存在するはず
+                 // loadQuestionsが成功していればallQuestions > 0のはず
+                startGameButton.disabled = !(allQuestions.length > 0);
             }
         });
         console.log("SCRIPT: 'もう一度挑戦' ボタンにリスナー設定。");
