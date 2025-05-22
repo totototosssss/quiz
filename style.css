@@ -1,222 +1,123 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const questionTextElement = document.getElementById('question-text');
-    const answerLengthHintElement = document.getElementById('answer-length-hint');
-    const answerInputElement = document.getElementById('answer-input');
-    const submitAnswerButton = document.getElementById('submit-answer-button');
-    const feedbackDisplayElement = document.getElementById('feedback-display');
-    const generalFeedbackElement = document.getElementById('general-feedback');
-    const attemptsLeftDisplayElement = document.getElementById('attempts-left-display');
-    const nextButton = document.getElementById('next-button');
-    const scoreElement = document.getElementById('score');
+body {
+    font-family: 'Arial', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    background-color: #f0f0f0; /* 画像が読み込めない場合のフォールバック色 */
+    /* home.png が style.css と同じ階層にあることを確認してください。 */
+    /* もし images フォルダなど別の場所なら url('images/home.png') のように変更 */
+    background-image: url('home.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    color: #333;
+    padding: 20px;
+    box-sizing: border-box;
+}
 
-    const resultAreaElement = document.getElementById('result-area');
-    const finalScoreElement = document.getElementById('final-score');
-    const totalQuestionsElement = document.getElementById('total-questions');
-    const restartButton = document.getElementById('restart-button');
+.quiz-container {
+    background-color: rgba(255, 255, 255, 0.92); /* 背景画像が見えるように少し透明度を調整 */
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 600px;
+    text-align: center;
+}
 
-    const questionAreaElement = document.getElementById('question-area');
-    const controlsAreaElement = document.getElementById('controls-area');
-    const scoreAreaElement = document.getElementById('score-area'); // Score display area
+h1 {
+    color: #333;
+    margin-bottom: 20px;
+}
 
-    let allQuestions = [];
-    let selectedQuestions = [];
-    let currentQuestionIndex = 0;
-    let currentAnswer = "";
-    let score = 0;
-    let attemptsLeft = 0;
-    const MAX_ATTEMPTS = 3;
-    const NUM_QUESTIONS_TO_SHOW = 10; // 表示する問題数
+h2#question-text { /* IDセレクタで詳細度を上げる */
+    font-size: 1.4em;
+    margin-bottom: 15px;
+    min-height: 40px;
+    color: #333; /* 初期メッセージにも適用 */
+}
 
-    async function loadQuestions() {
-        try {
-            const response = await fetch('train_questions.json');
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status} on ${response.url}`);
-            }
-            allQuestions = await response.json();
-            if (!allQuestions || allQuestions.length === 0) {
-                displayError('問題データが空か、読み込みに失敗しました。');
-                return;
-            }
-            startGame();
-        } catch (error) {
-            console.error('問題の読み込みに失敗:', error);
-            displayError(`問題の読み込みエラー: ${error.message}。ファイルパスやJSON形式を確認してください。`);
-        }
-    }
+#answer-length-hint {
+    font-size: 0.9em;
+    color: #555;
+    margin-bottom: 15px;
+}
 
-    function displayError(message) {
-        questionTextElement.textContent = message;
-        answerLengthHintElement.style.display = 'none';
-        document.getElementById('input-area').style.display = 'none';
-        attemptsLeftDisplayElement.style.display = 'none';
-        generalFeedbackElement.style.display = 'none';
-    }
+#input-area {
+    display: flex; /* JavaScript で block や flex に変更して表示 */
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 15px;
+    gap: 10px;
+}
 
-    function startGame() {
-        score = 0;
-        currentQuestionIndex = 0;
-        updateScoreDisplay();
+#answer-input {
+    padding: 10px;
+    font-size: 1em;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    flex-grow: 1;
+    max-width: 300px;
+}
 
-        // 問題をシャッフルし、一部を選択
-        selectedQuestions = shuffleArray([...allQuestions]).slice(0, NUM_QUESTIONS_TO_SHOW);
-        if (selectedQuestions.length === 0 && allQuestions.length > 0) {
-            selectedQuestions = shuffleArray([...allQuestions]); // 元データが少ない場合は全て
-        }
-        
-        totalQuestionsElement.textContent = selectedQuestions.length;
-        resultAreaElement.style.display = 'none';
-        questionAreaElement.style.display = 'block';
-        controlsAreaElement.style.display = 'block';
-        scoreAreaElement.style.display = 'block';
-        answerLengthHintElement.style.display = 'block';
-        document.getElementById('input-area').style.display = 'flex';
-        attemptsLeftDisplayElement.style.display = 'block';
-        generalFeedbackElement.style.display = 'block';
+#submit-answer-button,
+#next-button,
+#restart-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.3s ease;
+}
 
+#submit-answer-button:hover:not(:disabled),
+#next-button:hover,
+#restart-button:hover {
+    background-color: #0056b3;
+}
 
-        if (selectedQuestions.length > 0) {
-            displayQuestion();
-        } else {
-            displayError('表示できるクイズ問題がありません。');
-        }
-    }
+#submit-answer-button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
 
-    function shuffleArray(array) {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-        }
-        return array;
-    }
+.feedback-display {
+    margin: 15px 0;
+    font-size: 1.5em;
+    min-height: 30px;
+    letter-spacing: 0.2em;
+}
 
-    function displayQuestion() {
-        if (currentQuestionIndex < selectedQuestions.length) {
-            const questionData = selectedQuestions[currentQuestionIndex];
-            questionTextElement.textContent = questionData.question;
-            currentAnswer = questionData.answer_entity.trim(); // 正解の文字列、前後の空白除去
+#general-feedback {
+    font-weight: bold;
+    min-height: 20px;
+    margin-bottom: 10px;
+}
 
-            answerLengthHintElement.textContent = `答えは ${currentAnswer.length} 文字です。`;
-            answerInputElement.value = "";
-            answerInputElement.maxLength = currentAnswer.length; // 最大文字数を設定
-            answerInputElement.disabled = false;
-            
-            feedbackDisplayElement.innerHTML = "";
-            generalFeedbackElement.textContent = "";
-            generalFeedbackElement.className = "";
+#general-feedback.correct {
+    color: #28a745;
+}
 
-            attemptsLeft = MAX_ATTEMPTS;
-            attemptsLeftDisplayElement.textContent = `挑戦回数: あと ${attemptsLeft} 回`;
-            
-            submitAnswerButton.disabled = false;
-            nextButton.style.display = 'none';
-        } else {
-            showResults();
-        }
-    }
+#general-feedback.incorrect {
+    color: #dc3545;
+}
 
-    submitAnswerButton.addEventListener('click', handleSubmitAnswer);
-    answerInputElement.addEventListener('keypress', function(event) {
-        if (event.key === 'Enter') {
-            handleSubmitAnswer();
-        }
-    });
+#attempts-left-display {
+    font-size: 0.9em;
+    color: #777;
+    margin-bottom: 15px;
+}
 
+.score-area {
+    margin-top: 20px;
+    font-size: 1.1em;
+}
 
-    function handleSubmitAnswer() {
-        if (submitAnswerButton.disabled) return;
-
-        const userInput = answerInputElement.value.trim();
-
-        if (userInput.length !== currentAnswer.length) {
-            generalFeedbackElement.textContent = `答えは ${currentAnswer.length} 文字で入力してください。`;
-            generalFeedbackElement.className = "incorrect";
-            return;
-        }
-
-        attemptsLeft--;
-        let isCorrect = userInput === currentAnswer;
-        
-        let feedbackSymbols = []; // ['✅', '☑️', '❌'] を格納
-
-        if (isCorrect) {
-            score++;
-            generalFeedbackElement.textContent = "正解！ 🎉";
-            generalFeedbackElement.className = "correct";
-            feedbackSymbols = userInput.split('').map(() => '✅');
-            finalizeAttempt();
-        } else {
-            const answerChars = currentAnswer.split('');
-            const inputChars = userInput.split('');
-            const tempFeedback = new Array(currentAnswer.length).fill(null);
-            const answerCharCounts = {};
-
-            for (const char of answerChars) {
-                answerCharCounts[char] = (answerCharCounts[char] || 0) + 1;
-            }
-
-            // 1st pass: Correct position (✅)
-            for (let i = 0; i < currentAnswer.length; i++) {
-                if (inputChars[i] === answerChars[i]) {
-                    tempFeedback[i] = '✅';
-                    answerCharCounts[inputChars[i]]--;
-                }
-            }
-
-            // 2nd pass: Present but wrong position (☑️) or absent (❌)
-            for (let i = 0; i < currentAnswer.length; i++) {
-                if (tempFeedback[i] === null) { // If not already marked green
-                    if (answerChars.includes(inputChars[i]) && answerCharCounts[inputChars[i]] > 0) {
-                        tempFeedback[i] = '☑️';
-                        answerCharCounts[inputChars[i]]--;
-                    } else {
-                        tempFeedback[i] = '❌';
-                    }
-                }
-            }
-            feedbackSymbols = tempFeedback;
-
-            if (attemptsLeft > 0) {
-                generalFeedbackElement.textContent = `不正解です。`;
-                generalFeedbackElement.className = "incorrect";
-            } else {
-                generalFeedbackElement.textContent = `残念！正解は「${currentAnswer}」でした。`;
-                generalFeedbackElement.className = "incorrect";
-                finalizeAttempt();
-            }
-        }
-        
-        feedbackDisplayElement.innerHTML = feedbackSymbols.join(' ');
-        attemptsLeftDisplayElement.textContent = `挑戦回数: あと ${attemptsLeft} 回`;
-        updateScoreDisplay();
-    }
-
-    function finalizeAttempt() {
-        submitAnswerButton.disabled = true;
-        answerInputElement.disabled = true;
-        nextButton.style.display = 'inline-block';
-    }
-
-    function updateScoreDisplay() {
-        scoreElement.textContent = score;
-    }
-
-    function nextQuestionHandler() {
-        currentQuestionIndex++;
-        displayQuestion();
-    }
-
-    function showResults() {
-        questionAreaElement.style.display = 'none';
-        controlsAreaElement.style.display = 'none';
-        // scoreAreaElement.style.display = 'none'; // Keep score visible for final results
-        resultAreaElement.style.display = 'block';
-        finalScoreElement.textContent = score;
-        totalQuestionsElement.textContent = selectedQuestions.length; // 表示した問題数
-    }
-
-    nextButton.addEventListener('click', nextQuestionHandler);
-    restartButton.addEventListener('click', startGame);
-
-    loadQuestions();
-});
+.result-area {
+    margin-top: 20px;
+}
