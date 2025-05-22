@@ -400,11 +400,11 @@ h2#question-text {
 }
 
 .disclaimers p.disclaimer-item {
-    font-size: 0.75em; /* 小さく表示 */
+    font-size: 0.68em; /* 小さく表示 */
     color: var(--color-text-secondary); /* やや薄めの文字色 */
-    line-height: 1.6; /* 行間を少し広めに */
+    line-height: 1.5; /* 行間を少し広めに */
     text-align: left; /* 注意事項は左寄せの方が見やすい */
-    margin-bottom: 6px; /* 各項目間のスペース */
+    margin-bottom: 5px; /* 各項目間のスペース */
     padding-left: 0.5em; /*箇条書き風のインデント */
 }
 
