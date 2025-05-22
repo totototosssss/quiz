@@ -154,7 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function startGame() {
         console.log("SCRIPT: startGame() が呼び出されました。");
-        if (!quizMainContentElement || !quizFooterElement || !resultAreaElement || !questionTextElement || !totalQuestionsElement || !questionProgressDisplayElement) { 
+        if (!quizMainContentElement || !quizFooterElement || !resultAreaElement || !questionTextElement || !totalQuestionsInGameElement || !questionProgressDisplayElement) {
              console.error("SCRIPT_CRITICAL: startGameに必要なUI要素がありません。"); displayErrorInQuiz("UI部品不足でゲーム開始不可。"); return;
         }
         quizMainContentElement.style.display = 'block'; quizFooterElement.style.display = 'block'; 
