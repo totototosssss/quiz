@@ -10,21 +10,21 @@
     <div class="quiz-container">
         <h1>タイピングクイズ！</h1>
         <div id="question-area">
-            <h2 id="question-text">ここに問題が表示されます</h2>
-            <p id="answer-length-hint">答えの文字数ヒント</p>
-            <div id="input-area">
+            <h2 id="question-text">問題を読み込んでいます...</h2>
+            <p id="answer-length-hint" style="display:none;">答えの文字数ヒント</p>
+            <div id="input-area" style="display:none;">
                 <input type="text" id="answer-input" placeholder="答えを入力...">
                 <button id="submit-answer-button">解答する</button>
             </div>
-            <div id="feedback-display" class="feedback-display">
+            <div id="feedback-display" class="feedback-display" style="display:none;">
                 </div>
-            <p id="general-feedback"></p>
-            <p id="attempts-left-display">挑戦回数: あと 3 回</p>
+            <p id="general-feedback" style="display:none;"></p>
+            <p id="attempts-left-display" style="display:none;">挑戦回数: あと 3 回</p>
         </div>
         <div id="controls-area" class="controls-area">
             <button id="next-button" style="display:none;">次の問題へ</button>
         </div>
-        <div id="score-area" class="score-area">
+        <div id="score-area" class="score-area" style="display:none;">
             <p>スコア: <span id="score">0</span></p>
         </div>
         <div id="result-area" class="result-area" style="display:none;">
